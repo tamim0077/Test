@@ -1,0 +1,1194 @@
+# ExamDNA BD: COMPLETE MASTER DEVELOPMENT PROMPT
+## Production-Ready AI-Powered Educational Platform | Phase 1–17
+
+You are a senior full-stack software engineer, Google Firebase architect, AI integration specialist, database engineer, educational technology expert, and premium UI/UX designer.
+
+**Project:** ExamDNA BD  
+**Existing Website:** https://examdna-bd.ai.studio  
+**Primary Market:** Bangladesh  
+**Primary Language:** Bangla  
+**Budget:** $0 (strict free-tier development)
+
+## MAIN OBJECTIVE
+
+Transform my EXISTING ExamDNA BD application into a secure, reliable, scalable, fully functional AI-powered examination and learning platform.
+
+The application must support:
+
+- Student registration and Google Login
+- Teacher accounts and dashboards
+- One private administrator
+- SSC board question banks
+- AI-generated MCQs
+- Adaptive examination practice
+- Diagnostic examinations
+- Student progress tracking
+- Mistake Notebook
+- Friend Challenges
+- Secure persistent database
+- Beautiful, lightweight animations
+- Responsive design
+- Public deployment when free hosting is available
+
+**CRITICAL INSTRUCTIONS:**
+
+1. Do NOT rebuild the project from scratch.
+2. Do NOT remove existing working features.
+3. Do NOT destroy existing user data.
+4. Preserve the ExamDNA BD branding and current white/blue/light-gray design system.
+5. Firebase Authentication and Firestore integration have already been initiated. Inspect the existing implementation and reuse it.
+6. Google Login is already working. Fix its remaining bugs rather than replacing the entire authentication system.
+7. Never use mock data as real user statistics.
+8. Do not enable paid Firebase services, paid Cloud Run resources, Blaze billing, paid APIs, or credit-card-required services without explicit approval.
+9. Do not expose secrets or weaken security just to make a feature work for free.
+10. Make actual application changes, not just recommendations.
+
+Before making changes, audit the existing codebase, document the current architecture, identify broken behavior, and create a safe implementation sequence.
+
+---
+
+# PHASE 1: FIREBASE AUTHENTICATION & DATABASE
+
+Inspect the existing Firebase integration.
+
+Use the current Firebase project rather than creating an unnecessary new project.
+
+Implement or verify:
+
+- Firebase Authentication
+- Google Sign-In
+- Email/Password authentication where supported
+- Cloud Firestore
+- Persistent login sessions
+- Secure account registration
+- Role-based authentication
+- Secure server-side API endpoints
+- Proper Firestore security rules
+
+## Three Account Roles
+
+**Student**
+- Can register and log in.
+- Can manage their own profile.
+- Can take exams.
+- Can review their own results.
+- Can track progress and mistakes.
+- Can participate in challenges.
+
+**Teacher**
+- Can register and request teacher access.
+- Can manage permitted exams and questions.
+- Can generate questions using AI.
+- Can review authorized student performance.
+
+**Admin**
+- Only one explicitly designated account has Admin privileges.
+- Can access a private Admin Dashboard.
+- Can manage platform content, users, questions, and global analytics.
+
+Admin access must use secure Firebase custom claims or equivalent trusted server-side authorization.
+
+Never allow users to become Admin through a public registration form, editable email field, local storage modification, or frontend role manipulation.
+
+## Database Structure
+
+Create or adapt the following Firestore collections:
+
+- users
+- studentProfiles
+- teacherProfiles
+- subjects
+- chapters
+- questions
+- questionAnswerKeys
+- questionSources
+- questionImports
+- examSessions
+- examResults
+- mistakeNotebook
+- dailyActivity
+- challenges
+- challengeParticipants
+- notifications
+- adminAuditLogs
+- platformSettings
+
+Use unique Firebase UIDs to associate data with individual users.
+
+Create appropriate indexes, validation, access rules, and safe migration procedures.
+
+Use existing collections where possible instead of duplicating data.
+
+---
+
+# PHASE 2: FIX GOOGLE LOGIN & USER PROFILE BUGS
+
+## CRITICAL EXISTING BUG
+
+When a different user logs in using another Google account, the application does not always update the displayed name and profile information.
+
+The current homepage may continue displaying another user's profile or hardcoded information.
+
+FIX THIS COMPLETELY.
+
+### Correct Google Profile Synchronization
+
+Retrieve:
+
+- Firebase UID
+- Google displayName
+- Google email
+- Google photoURL
+
+Use Firebase Authentication as the identity source.
+
+Use `onAuthStateChanged` or an equivalent authentication-state listener.
+
+Each account must have its own Firestore user document:
+
+`users/{uid}`
+
+When a different Google account logs in:
+
+1. Detect the authenticated UID.
+2. Clear the previous user's private UI state.
+3. Cancel or ignore stale user-specific requests.
+4. Load the new user's Firestore document.
+5. Display the correct name and profile picture.
+6. Load that user's actual exam results and progress.
+7. Never show the previous user's private information.
+
+Do not let cached state cause cross-account data leakage.
+
+### Profile Picture
+
+- Display the user's Google profile picture by default.
+- Support a separate custom profile picture if the user chooses one.
+- Preserve custom pictures after logout and login.
+- Never display another user's uploaded picture.
+- Use a clean initials avatar when no picture exists.
+
+### Editable Profile
+
+Allow students to update:
+
+- Display name
+- Profile picture
+- Class
+- Academic batch
+- School or college, optionally
+- Preferred subjects
+- Preferred language
+
+Preserve user-edited profile fields after subsequent Google logins.
+
+Do not overwrite custom profile names with Google names on every login.
+
+### Homepage Identity
+
+When logged out:
+- Display Login / Signup buttons.
+- Display only clearly labeled demo information.
+
+When logged in:
+- Show the authenticated user's name.
+- Show their correct profile picture.
+- Replace Student Login / Signup with Go to Dashboard.
+- Provide Profile and Logout actions.
+
+**IMPORTANT:** Do not show a generic sample student's 85% progress as if it belongs to the currently logged-in user.
+
+New users should have actual empty or zero-state statistics.
+
+---
+
+# PHASE 3: FIX STUDENT DASHBOARD STATISTICS
+
+## EXISTING PROBLEM
+
+Dashboard values are inconsistent.
+
+For example:
+- Average Accuracy changes.
+- Progress Ring may remain at an old value.
+- Some displayed statistics appear to use independent or static data.
+
+Replace all fabricated statistics with real calculated values.
+
+### Implement Accurate Metrics
+
+- Total exams completed
+- Total questions answered
+- Correct answers
+- Incorrect answers
+- Skipped questions
+- Attempted-question accuracy
+- Overall exam score
+- Daily practice history
+- Subject-wise performance
+- Chapter-wise performance
+
+Use:
+
+`Answer Accuracy = (Correct Answers / Answered Questions) × 100`
+
+If the user answered zero questions, display 0% or a suitable empty state.
+
+Do not divide by zero.
+
+Differentiate answer accuracy from total exam score.
+
+All widgets showing the same metric must use the same authoritative calculated value.
+
+Update dashboard statistics after an exam is successfully submitted and saved.
+
+Prevent duplicate submissions from increasing results or statistics twice.
+
+---
+
+# PHASE 4: FIX STUDY STREAK
+
+## EXISTING BUG
+
+The Study Streak can jump unexpectedly after completing an examination.
+
+Implement a correct daily practice streak system.
+
+Rules:
+
+1. Use Bangladesh timezone: Asia/Dhaka.
+2. A qualifying completed practice session counts as activity for that calendar day.
+3. Multiple exams on one day must not increase the streak multiple times.
+4. Consecutive active days increase the streak.
+5. Missed days break the streak according to clearly defined rules.
+6. Store daily activity persistently in Firestore.
+7. Calculate streaks from real activity dates.
+
+Display:
+- Current Streak
+- Longest Streak
+- Weekly Activity
+
+Remove artificial or randomly generated streak values.
+
+---
+
+# PHASE 5: BUILD A LARGE SSC QUESTION BANK
+
+## PRIMARY GOAL
+
+Expand the question bank significantly.
+
+Collect and organize authentic SSC examination questions from the three most recent completed SSC exam years:
+
+- 2024
+- 2025
+- 2026
+
+Support all nine Bangladesh general education boards:
+
+1. Dhaka
+2. Rajshahi
+3. Cumilla
+4. Jashore
+5. Chattogram
+6. Barishal
+7. Sylhet
+8. Dinajpur
+9. Mymensingh
+
+### Subjects
+
+Support all relevant SSC subjects, including:
+
+- Bangla
+- English
+- General Mathematics
+- Higher Mathematics
+- Physics
+- Chemistry
+- Biology
+- ICT
+- Bangladesh and Global Studies
+- Religious Studies
+- Accounting
+- Finance and Banking
+- Business Entrepreneurship
+
+Build the database structure so additional classes, HSC subjects, and admission examination categories can be added later.
+
+### Authentic Question Sources
+
+Discover question papers through:
+
+- Official education board websites
+- NCTB resources
+- Authorized educational archives
+- Administrator-provided examination documents
+- Other legitimate sources with adequate reuse permission
+
+Do not invent question papers or claim inaccessible sources were successfully imported.
+
+Do not bypass paywalls, scrape protected resources, or reproduce copyrighted collections without appropriate authorization.
+
+If an authentic question paper is unavailable, report it as missing.
+
+Never fabricate authentic board examination questions.
+
+### Question Classification
+
+Every question must store:
+
+- Unique question ID
+- Examination level
+- Board
+- Year
+- Subject
+- Chapter
+- Topic
+- Question type
+- Question text
+- Answer options
+- Correct answer
+- Explanation
+- Difficulty
+- Source category
+- Source reference
+- Source verification status
+- Publication status
+- Creation timestamp
+
+Support four source categories:
+
+1. AUTHENTIC_BOARD
+2. AI_GENERATED
+3. TEACHER_CREATED
+4. PRACTICE
+
+Never label generated practice questions as authentic board questions.
+
+### Question Bank Coverage
+
+Build an Admin Dashboard showing:
+
+- Available questions by board
+- Questions by year
+- Questions by subject
+- Missing examination papers
+- Imported questions
+- Verified questions
+- Questions awaiting review
+- Duplicate questions
+
+Do not display estimated question totals as actual imported records.
+
+---
+
+# PHASE 6: ADMIN QUESTION IMPORT SYSTEM
+
+Build a professional Question Import Manager inside the Admin Dashboard.
+
+Support importing:
+
+- PDF question papers
+- Images of question papers
+- CSV files
+- JSON files
+
+### Import Pipeline
+
+1. Admin selects a source document.
+2. Admin provides board, year, subject, and source information.
+3. Verify whether the document can legally be reused.
+4. Extract the question text.
+5. Extract available answer choices.
+6. Identify MCQ and creative questions separately.
+7. Classify subjects, chapters, and topics.
+8. Detect duplicates and near-duplicates.
+9. Validate question structure.
+10. Verify answers against available trusted materials.
+11. Mark uncertain answers for manual review.
+12. Show an editable preview.
+13. Require administrator approval.
+14. Save approved questions to Firestore.
+15. Update question bank availability counts.
+
+Support Bangla, English, mathematical equations, and scientific notation.
+
+Use appropriate OCR or document-parsing functionality only when available.
+
+If document extraction requires a paid service, do not activate it automatically.
+
+Provide a free alternative, such as manually prepared CSV or JSON import.
+
+Never silently publish unverified AI-extracted answers.
+
+---
+
+# PHASE 7: EXACT MCQ GENERATION ENGINE
+
+## CRITICAL EXISTING PROBLEM
+
+Students selecting a specific number of MCQs may receive fewer questions or an insufficient-question warning.
+
+Fix this.
+
+Students must be able to request supported counts such as:
+
+- 10
+- 20
+- 30
+- 35
+- 50
+- 100
+
+### Examination Configuration
+
+Students select:
+
+- Examination level
+- Subject
+- Chapter or All Chapters
+- Question source
+- Board, optionally
+- Examination year, optionally
+- Number of questions
+- Duration
+- Difficulty, optionally
+
+### Question Source Modes
+
+**Mode A: Authentic Board Questions**
+
+Only verified authentic questions matching the selected filters.
+
+Never substitute AI questions without the student's consent.
+
+**Mode B: AI-Generated Questions**
+
+Generate fresh practice MCQs with Gemini.
+
+**Mode C: Hybrid Practice**
+
+Combine verified question bank items with AI-generated questions when necessary.
+
+### Exact Count Generation
+
+1. Validate the student's request.
+2. Fetch matching approved questions.
+3. Remove duplicates.
+4. Check the available question count.
+5. Generate additional questions in AI or Hybrid mode if necessary.
+6. Validate AI-generated questions.
+7. Reject malformed or incomplete questions.
+8. Check for duplicate content.
+9. Validate answers and explanations.
+10. Confirm the final question count.
+11. Start the exam only when a complete valid set exists.
+
+### Important Behavior
+
+If the student requests 50 questions, the examination must not silently start with 15.
+
+If 100 AI questions are requested, attempt to produce 100 validated questions using controlled batches.
+
+Handle Gemini free-tier quotas, retry limits, and failures.
+
+If generation cannot complete:
+
+- Do not create an incomplete exam.
+- Explain the limitation.
+- Allow retrying later.
+- Offer a smaller count.
+- Offer an existing-question-only alternative.
+
+Do not promise unlimited free AI generation.
+
+### Cost Optimization
+
+Implement:
+
+- Reusable question caching
+- Question generation batching
+- Duplicate detection
+- Daily AI generation limits
+- Usage monitoring
+- Efficient prompt design
+- Generation failure recovery
+
+Ensure generated MCQs follow the relevant Bangladeshi curriculum and examination style.
+
+---
+
+# PHASE 8: EXAM RESULT & SCORING ENGINE
+
+Implement a reliable server-validated examination system.
+
+Each completed exam must save:
+
+- Exam ID
+- Student UID
+- Questions
+- Selected answers
+- Correct answer count
+- Incorrect answer count
+- Unanswered count
+- Total score
+- Accuracy
+- Completion time
+- Submission timestamp
+
+### Scoring Requirements
+
+- Never trust scores calculated only in the browser.
+- Correct answers and scoring must be validated by a trusted backend.
+- Do not expose correct answer keys before the exam ends.
+- Prevent duplicate result submission.
+- Support examination-specific negative marking only when configured.
+
+### Result Interface
+
+Show:
+
+- Total Questions
+- Correct Answers
+- Incorrect Answers
+- Skipped Questions
+- Final Score
+- Answer Accuracy
+- Completion Time
+- Question-by-Question Review
+
+Provide clear explanations for incorrect answers.
+
+Allow students to review results after returning to their dashboard.
+
+Persist all results in Firestore.
+
+---
+
+# PHASE 9: MISTAKE NOTEBOOK
+
+Improve the existing Mistake Notebook.
+
+Whenever a student answers incorrectly:
+
+1. Save the question against their UID.
+2. Save the submitted answer.
+3. Preserve the correct answer.
+4. Save the explanation and source details.
+5. Track review history.
+6. Allow the student to retry the question.
+7. Mark questions as mastered when appropriate.
+
+Implement:
+
+- Subject filters
+- Chapter filters
+- Retry Mistakes
+- Progress tracking
+- Mastered Questions
+- Spaced review suggestions
+
+Keep students' mistake records completely separate.
+
+---
+
+# PHASE 10: STUDENT DASHBOARD
+
+After successful login, students must be able to access their personalized Student Dashboard.
+
+Do not send them directly into an exam.
+
+Dashboard features:
+
+- Personalized welcome
+- Student profile
+- Start New Exam
+- Quick Practice
+- Exam Wizard
+- AI Diagnostic Exam
+- Adaptive Practice
+- Exam History
+- Subject Performance
+- Progress Analytics
+- Study Streak
+- Mistake Notebook
+- Daily Micro-Learning
+- Friend Challenge
+- Profile Settings
+
+Use real persisted user data.
+
+New accounts must have clean empty states rather than fictitious completed exam history.
+
+### Simplify Exam Navigation
+
+Create a Quick Exam flow containing:
+
+1. Subject
+2. Chapter or All Chapters
+3. Number of Questions
+4. Duration
+5. Start Exam
+
+Keep advanced options inside the existing Exam Wizard.
+
+Preserve selected options when navigating backward.
+
+Show an exam summary before starting.
+
+---
+
+# PHASE 11: TEACHER DASHBOARD
+
+Build or improve the Teacher Dashboard.
+
+Teachers must be able to:
+
+- Manage their profiles
+- Select examination levels
+- Select subjects and chapters
+- Generate questions using Gemini
+- Create their own questions
+- Review AI-generated questions
+- Correct mistakes
+- Create assignments
+- Publish permitted examinations
+- Share exam links
+- Review authorized student submissions
+- View performance analytics
+
+Support:
+
+- SSC
+- HSC where configured
+- Admission
+- Future additional levels
+
+Teacher-created questions should not automatically become globally verified questions.
+
+Require Admin review before adding them to the official shared question bank.
+
+Teachers must not access unrestricted student data or other teachers' private records.
+
+---
+
+# PHASE 12: PRIVATE ADMIN DASHBOARD
+
+Create a powerful, responsive, secure Admin Dashboard.
+
+Suggested route:
+
+`/admin`
+
+The route must be protected by real backend authorization.
+
+Only the designated Admin account can access it.
+
+### Admin Overview
+
+Display real statistics:
+
+- Total registered users
+- Total students
+- Total teachers
+- Active users
+- Total examinations
+- Total questions
+- Authentic board questions
+- AI-generated questions
+- Pending question reviews
+- Daily exam submissions
+- User registration trends
+- Popular subjects
+- Subject-wise performance
+- AI usage estimates
+- Database usage
+- Recent system errors
+
+### Admin Management
+
+Allow the Admin to:
+
+- Search users
+- View registered accounts
+- Approve teacher accounts
+- Suspend users
+- Manage questions
+- Import board examination papers
+- Review generated questions
+- Approve or reject questions
+- Manage subjects and chapters
+- Monitor exam activity
+- View aggregated performance
+- Export authorized reports
+- Manage platform settings
+- Review audit logs
+
+Protect students' personal information.
+
+Use paginated queries instead of downloading the entire database.
+
+Avoid unrestricted access to students' private records unless necessary for a legitimate administrative function.
+
+### Admin Account Security
+
+Never publicly expose Admin registration.
+
+Use trusted Firebase Admin SDK provisioning or an equivalent secure mechanism.
+
+Require the designated Firebase UID for assigning Admin privileges.
+
+If secure Admin provisioning is not yet possible, clearly explain the missing setup step.
+
+Do not implement a fake frontend-only Admin permission system.
+
+---
+
+# PHASE 13: FRIEND CHALLENGE
+
+Preserve and improve the existing Friend Challenge experience.
+
+Features:
+
+- Create a Challenge
+- Share invitation link or code
+- Join Challenge
+- Select subject
+- Select question count
+- Shared question set
+- Countdown timer
+- Live challenge progress where supported
+- Score comparison
+- Winner announcement
+- Challenge history
+
+All players must receive the same questions under the same scoring rules.
+
+Validate scores securely.
+
+Prevent answer-key exposure and cheating through client-side manipulation.
+
+Persist challenge results.
+
+Use efficient real-time subscriptions where available.
+
+---
+
+# PHASE 14: PREMIUM ANIMATIONS & UI IMPROVEMENTS
+
+The existing ExamDNA BD visual design is good.
+
+DO NOT replace it.
+
+Preserve:
+
+- White background
+- Blue accent colors
+- Light-gray surfaces
+- Gradient highlights
+- Current navigation structure
+- Current brand identity
+- Existing recognizable dashboard components
+
+Improve it with premium, lightweight animations.
+
+Use Framer Motion or an equivalent library compatible with the existing project.
+
+### Required Animations
+
+**Homepage**
+- Smooth hero entrance
+- Subtle gradient movement
+- Animated feature-card entrances
+- Smooth buttons
+- Refined hover interactions
+
+**Student Dashboard**
+- Animated statistics
+- Smooth progress rings
+- Chart transitions
+- Subject card hover effects
+- Elegant loading states
+
+**Exam Interface**
+- Smooth question transitions
+- Selected-answer animations
+- Question progress indicator
+- Clear answer-selection feedback
+- Non-disruptive timer visuals
+
+**Exam Results**
+- Animated score reveal
+- Accuracy ring animation
+- Smooth score breakdown
+- Clear result feedback
+
+**Friend Challenge**
+- Animated countdown
+- Challenge progress animations
+- Winner celebration
+
+**Profile**
+- Smooth image loading
+- Profile editing transitions
+- Clean account menu animation
+
+### Animation Rules
+
+- Professional and minimal
+- Fast and responsive
+- No excessive bouncing
+- No distracting motion
+- No heavy unnecessary 3D
+- No laggy animations
+- No unnecessary delays during examinations
+- Respect prefers-reduced-motion
+
+Use tasteful motion to make the platform feel like a modern premium educational product.
+
+---
+
+# PHASE 15: LANGUAGE & RESPONSIVENESS
+
+## Language
+
+Default language: Bangla.
+
+Support switching between:
+
+- Bangla
+- English
+
+Create centralized localization dictionaries.
+
+Apply language selection consistently across:
+
+- Navigation
+- Login
+- Registration
+- Dashboard
+- Quiz Setup
+- Exam Interface
+- Results
+- Notifications
+- Teacher Dashboard
+- Admin Dashboard
+- Error Messages
+
+Avoid confusing mixed-language interface labels.
+
+Preserve necessary English academic and technical terminology.
+
+## Responsiveness
+
+Support:
+
+- Small Android phones
+- iPhones
+- Tablets
+- Laptops
+- Desktop monitors
+
+Ensure:
+
+- No horizontal overflow
+- No broken navigation
+- No overlapping answer choices
+- Readable mathematical equations
+- Accessible buttons
+- Responsive tables
+- Mobile-friendly examination interface
+- Proper Bangla typography
+- Usable dashboard charts
+
+Preserve performance on lower-powered devices.
+
+---
+
+# PHASE 16: PRODUCTION SECURITY, PERFORMANCE & ZERO-BUDGET DEPLOYMENT
+
+My available development and hosting budget is strictly $0.
+
+Do not enable paid services or billing without asking.
+
+Prioritize genuinely available free-tier resources.
+
+### Security
+
+Implement:
+
+- Secure authentication
+- Backend-verified access control
+- Firestore Security Rules
+- Strict user-data ownership
+- Safe input validation
+- Server-side scoring
+- Protected answer keys
+- API rate limiting
+- Secure secret management
+- Error handling
+- Account deletion functionality
+- Basic privacy protections
+- Protections appropriate for school-age users
+- Admin audit logging
+
+### Performance
+
+Implement:
+
+- Efficient Firestore queries
+- Appropriate database indexes
+- Lazy loading
+- Pagination
+- Question caching
+- Reduced unnecessary database reads
+- Lightweight animations
+- Efficient image loading
+- Optimized AI requests
+
+### Free-Tier Policy
+
+- Reuse the existing Google AI Studio project.
+- Reuse the existing Firebase connection.
+- Do not automatically upgrade Firebase to Blaze.
+- Do not require a credit card.
+- Do not activate paid Cloud Storage.
+- Do not activate paid third-party OCR services.
+- Do not enable paid Gemini models.
+- Do not automatically activate paid Cloud Run resources.
+- Provide a usable free fallback wherever possible.
+- Clearly identify features blocked by free-tier restrictions.
+
+If public hosting cannot remain within the available free tier, explain the limitation and prepare a free-compatible deployment option instead of secretly enabling billing.
+
+### Deployment
+
+Prepare the application for public access.
+
+Ensure:
+
+- Authentication works on the published domain.
+- Authorized domains are configured correctly.
+- Environment secrets remain secure.
+- Database permissions are enforced.
+- Student data persists.
+- The Admin Dashboard is private.
+- Error monitoring is available.
+- AI quota exhaustion is handled gracefully.
+
+Provide exact deployment instructions for the current AI Studio environment.
+
+Do not claim production deployment is complete unless it was successfully tested.
+
+---
+
+# PHASE 17: COMPLETE TESTING & FINAL VERIFICATION
+
+Create and execute a comprehensive test plan.
+
+### Test 1: Google Account Switching
+
+Login with Google Account A.
+
+Verify:
+- Correct name
+- Correct email
+- Correct profile picture
+- Correct UID
+- Correct progress data
+
+Log out.
+
+Login with Google Account B.
+
+Verify:
+- Different account identity
+- Correct independent profile
+- No Account A data leakage
+
+Log back into Account A.
+
+Confirm its original profile and history are preserved.
+
+### Test 2: New Student Registration
+
+A brand-new student registers.
+
+Verify:
+- Firebase account created
+- Firestore profile created
+- Student role assigned
+- Dashboard accessible
+- No fabricated progress statistics
+
+### Test 3: Exact MCQ Count
+
+Generate exams requesting:
+
+10, 20, 30, 35, 50, and 100 questions.
+
+Verify each successfully created examination contains exactly the requested number of valid questions.
+
+If generation fails due to quota or insufficient authentic questions, verify the app explains the limitation without creating an incomplete exam.
+
+### Test 4: Exam Results
+
+Submit an exam with:
+
+- Correct answers
+- Incorrect answers
+- Unanswered questions
+
+Verify scoring, accuracy, and skipped count.
+
+### Test 5: Dashboard Accuracy
+
+After completing an exam, confirm the dashboard updates correctly.
+
+Progress rings and text statistics must agree when representing the same metric.
+
+### Test 6: Study Streak
+
+Complete several exams on one day.
+
+Verify the streak does not increase multiple times.
+
+Test consecutive days and missed days.
+
+### Test 7: Mistake Notebook
+
+Answer several questions incorrectly.
+
+Verify they are saved to the correct student's Mistake Notebook.
+
+### Test 8: Teacher Permissions
+
+Verify teachers can access authorized features but cannot access private Admin data.
+
+### Test 9: Admin Security
+
+Verify students cannot access the Admin Dashboard or privileged API endpoints.
+
+### Test 10: Question Import
+
+Import a permitted sample question file.
+
+Verify:
+
+- Correct board
+- Correct year
+- Correct subject
+- Correct chapter
+- Correct question text
+- Correct answers
+- Correct source attribution
+- No duplicate publication
+
+### Test 11: Database Persistence
+
+Complete exams and log out.
+
+Log in again.
+
+Verify history, profile, progress, and mistakes remain available.
+
+### Test 12: Mobile Interface
+
+Test multiple mobile viewport sizes.
+
+Verify layout, navigation, question selection, and result presentation.
+
+### Test 13: Friend Challenge
+
+Test challenge creation and joining with two independent student accounts.
+
+Verify secure score calculation and matching question sets.
+
+### Test 14: Authentication-Aware Homepage
+
+Verify:
+- Logged-out users see Login / Signup.
+- Logged-in students see Dashboard access.
+- Logged-in teachers see Teacher Dashboard access.
+- Demo profile data is never presented as real authenticated user data.
+
+---
+
+# FINAL IMPLEMENTATION RULES
+
+Follow this execution order:
+
+**Step 1:** Inspect and audit the existing project.
+
+**Step 2:** Preserve the current working code and database.
+
+**Step 3:** Fix Google authentication and dynamic user identity.
+
+**Step 4:** Verify persistent Firebase database functionality.
+
+**Step 5:** Implement secure Student, Teacher, and Admin roles.
+
+**Step 6:** Fix Dashboard Accuracy and Study Streak.
+
+**Step 7:** Fix the MCQ generation and examination engine.
+
+**Step 8:** Fix examination results and Mistake Notebook persistence.
+
+**Step 9:** Build the question import pipeline and expanded question bank.
+
+**Step 10:** Improve Student and Teacher Dashboards.
+
+**Step 11:** Build the private Admin Control Center.
+
+**Step 12:** Improve Friend Challenge.
+
+**Step 13:** Implement language consistency and premium animations.
+
+**Step 14:** Optimize mobile responsiveness and performance.
+
+**Step 15:** Execute tests and fix detected regressions.
+
+**Step 16:** Prepare the application for free-tier public deployment.
+
+## IMPORTANT DELIVERY REQUIREMENTS
+
+Do not simply provide explanations.
+
+Implement the actual changes inside my existing project wherever tools and permissions allow.
+
+Do not fake completed features.
+
+Do not populate the production database with fabricated authentic board questions.
+
+Do not create fake user accounts or misleading statistics.
+
+Do not mark tests as passed without executing them.
+
+If any task requires an external permission, authorized content source, billing upgrade, or unavailable service, explain that exact blocker without affecting the other working features.
+
+After implementation, report:
+
+1. Features successfully implemented
+2. Existing bugs fixed
+3. Firebase integration status
+4. Database collections and security rules
+5. Question bank import status
+6. Admin Dashboard access instructions
+7. Tests passed and tests not completed
+8. Remaining blockers
+9. Free-tier limitations
+10. Exact next steps for public launch
+
+**FINAL GOAL:**
+
+Deliver a fully functional, secure, beautifully animated, responsive ExamDNA BD educational platform where students can register, practice, take examinations, and track their progress while teachers create learning materials and one private administrator manages the entire system.
+
+Preserve the existing design.
+
+Prioritize accuracy, security, data persistence, and reliability.
+
+Do not spend money or enable billing without my explicit approval.
+
+START BY AUDITING THE EXISTING PROJECT AND IMPLEMENTING THE HIGHEST-PRIORITY FIXES.

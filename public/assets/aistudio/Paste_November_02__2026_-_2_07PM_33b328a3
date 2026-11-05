@@ -1,0 +1,872 @@
+You are the lead full-stack engineer and QA owner for the existing ExamDNA BD / GNNBD learning platform for Bangladeshi students.
+
+Upgrade the existing project into a trustworthy, functional public-beta launch candidate. The owner wants to launch in 2–3 days.
+
+Implement the work inside the existing project. Do not stop at recommendations, a mockup, or an implementation plan. Inspect the application, make the changes, test the complete flows, and report precisely what is finished and what remains blocked.
+
+Preserve the current interface and visual identity. The owner is satisfied with the overall design. Focus on functionality, correctness, speed, subject coverage, access control and learning engagement.
+
+The brand name is not final. Preserve the current displayed name unless explicitly instructed otherwise, and centralize brand settings so the name can be changed later.
+
+NON-NEGOTIABLE PRINCIPLES
+
+- Never fabricate board questions, answer keys, user statistics, testimonials, successful payments, multiplayer activity or test results.
+- Never describe a placeholder or simulated feature as a working production feature.
+- Never rely only on hidden menus or client-side routing for authorization.
+- Never publish unverified AI-generated questions as authentic board questions.
+- Never silently reduce the requested question count.
+- Never sacrifice scoring accuracy, privacy or content authenticity to meet the launch date.
+- Preserve existing user data and working functionality.
+- Make routine implementation decisions autonomously. Ask only when an essential external credential, source, permission or business decision is genuinely missing.
+- Prepare a reviewable launch candidate. This prompt does not by itself authorize publishing to production.
+
+1. INITIAL PROJECT INSPECTION
+
+Inspect the existing:
+- Framework and application structure.
+- Routes and navigation.
+- Authentication provider and session handling.
+- Database schema and access policies.
+- Student, teacher, guest and admin experiences.
+- Question sources and question-selection logic.
+- Exam timer, autosave, grading and submission logic.
+- Mistake Notebook and analytics.
+- AI integration and associated costs.
+- Challenge implementation.
+- Pricing, payments and subscription logic.
+- Deployment configuration and available tests.
+
+Identify which features are:
+- Fully functional.
+- Partially implemented.
+- Mocked or seeded with demonstration data.
+- Client-only when they require server enforcement.
+- Missing necessary external configuration.
+
+Before substantial changes, create a recoverable checkpoint using the project's available version-control workflow.
+
+Use safe, reversible migrations. Do not delete or overwrite real learning records to make the application appear clean.
+
+2. PRESERVE THE EXISTING INTERFACE
+
+Retain the current:
+- Visual identity.
+- Colors and typography style.
+- General page structure.
+- Familiar navigation patterns.
+- Existing usable components.
+
+Make targeted improvements only where necessary for:
+- Role-specific navigation.
+- Mobile responsiveness.
+- Readability.
+- Accessibility.
+- Loading and error feedback.
+- Correct feature behavior.
+
+Do not replace the site with a new generic template.
+
+Keep branding, support details, plan limits and prices in centralized configuration.
+
+3. AUTHENTICATION AND ROLE-BASED DASHBOARDS
+
+Implement trusted, persistent roles:
+- Student.
+- Teacher.
+- Admin.
+
+Guest/demo access must be a separate, restricted experience.
+
+After successful login:
+- Students land on their own student dashboard.
+- Teachers land on their own teacher dashboard.
+- Admins land on their protected admin dashboard.
+- Guests can access only clearly labelled demonstration features.
+
+A student must not see or access teacher or admin dashboards.
+A teacher must not automatically gain student-account access.
+A guest must not browse real student or teacher dashboards.
+
+Enforce these restrictions through:
+- Route protection.
+- Server-side API authorization.
+- Database ownership and membership policies.
+- File/object access policies where applicable.
+
+Do not trust a role supplied through browser storage, query parameters, form inputs or client requests.
+
+Public registration must never grant admin privileges. Teacher registration may create an empty teacher workspace, but must not expose existing batches or students.
+
+Use a single authenticated identity across:
+- Dashboard.
+- Exams.
+- Results.
+- Challenges.
+- Profile.
+- Achievements.
+- Billing.
+
+Remove hardcoded identities such as one student name on the dashboard and a different name in challenges.
+
+On logout:
+- End the session correctly.
+- Clear private cached application data.
+- Prevent browser navigation from revealing another account's private records.
+
+On account switching:
+- Load only the new account's authorized records.
+- Never retain the previous user's results, messages or profile.
+
+4. GUEST AND DEMO EXPERIENCE
+
+Keep a useful public demo without exposing real accounts.
+
+Guest users may:
+- View public information.
+- Try a limited, clearly labelled demo exam.
+- See demo explanations and a demo result.
+
+Guest users must not:
+- Access teacher/admin controls.
+- Read actual student records.
+- Join private batches without an authenticated authorized flow.
+- Appear as an existing real student.
+- Receive fabricated personal streaks, achievements or exam histories.
+
+Separate demo data from real production data.
+
+Label demo identities, statistics and challenges visibly. Do not mix demo activity into actual user counts, rankings or analytics.
+
+Replace ambiguous entry buttons:
+- “Try a Demo Exam.”
+- “Start My Preparation.”
+- “Teacher Login / Signup.”
+
+Do not start a timed exam unexpectedly when a visitor simply selects “I am a student.”
+
+5. FIX REPORTED EXAM AND RESULT BUGS
+
+Reproduce and fix these previously observed behaviors:
+
+A. Incorrect perfect-score message
+An attempt with 1 correct answer out of 12 and 11 unanswered showed “Perfect score.”
+
+Required behavior:
+- Perfect score only when every scored question is answered correctly.
+- Display correct, incorrect and unanswered separately.
+- Explain score calculations consistently.
+- Do not treat zero incorrect answers as equivalent to full marks.
+
+B. Incomplete answer review
+Review Answers must show all exam questions, including unanswered questions.
+
+For each question display:
+- Original question.
+- Options.
+- Student response, if any.
+- Correct answer.
+- Response status.
+- Verified explanation.
+- Question-report control.
+
+C. Topic mismatch
+A mathematics/logarithm exam displayed unrelated physics topics.
+
+Required behavior:
+- Derive topic analytics from the actual saved exam questions.
+- Show only assessed topics.
+- Do not display unassessed topics as 0% mastery.
+- Keep subject, chapter and topic relationships consistent.
+
+D. Challenge configuration mismatch
+A challenge advertised 20 questions and 15 minutes but began with 4 questions.
+
+Required behavior:
+- Lobby, saved configuration, actual question set, timer and result must agree.
+- Clearly distinguish full-match timing from per-question timing.
+
+E. Non-zero starting challenge scores
+A new challenge started with existing points and streaks.
+
+Required behavior:
+- New-match scores and match streaks start at zero.
+- Separate lifetime profile statistics from match statistics.
+- Do not simulate a live opponent without a visible demo/bot label.
+
+F. Fake or inconsistent dashboard statistics
+Remove hardcoded personal progress, streaks, badges, class averages and challenge wins from real accounts.
+
+New users must see honest empty states and clear next actions.
+
+6. RELIABLE EXAM CREATION AND QUESTION COUNTS
+
+Use a reviewed question bank for ordinary scored exams. Do not require a new AI generation request for every exam.
+
+Respect:
+- Level.
+- Subject.
+- Syllabus version.
+- Chapter.
+- Topic.
+- Difficulty.
+- Question source.
+- Requested count.
+- Time limit.
+
+Select the full valid question set before the exam begins.
+
+Do not include duplicate question IDs in a single exam.
+
+If insufficient questions match:
+- Show the actual available count.
+- Offer a smaller exam.
+- Offer broader chapter/topic/source selection.
+- Require the user to accept the revised configuration.
+
+Never silently replace a 20-question exam with 8 or 4 questions.
+
+Recent-question exclusion must be transparent. If the pool is too small, explain the limitation rather than silently producing an incomplete exam.
+
+Provide:
+- Quick Start: subject → chapter → start.
+- Advanced options for difficulty, count, timing and source.
+
+Preserve advanced capabilities without forcing every user through eight steps.
+
+7. EXAM PERSISTENCE, TIMER AND GRADING
+
+Persist the exam's question set and configuration so refreshes do not generate a different exam.
+
+Autosave answers promptly.
+
+Support:
+- Refresh recovery.
+- Reconnection.
+- Brief offline interruptions.
+- Resuming an active attempt where permitted.
+- Clear saved/saving/retry indicators.
+
+Use authoritative server timestamps for timed exams. Prevent refresh from restarting the timer.
+
+Make final submission idempotent:
+- Multiple clicks must create one result.
+- Retries must not duplicate rewards or records.
+- A submitted attempt cannot be silently rewritten.
+
+Enforce grading on the server. Do not expose answer keys to the browser before they are permitted in scored exam mode.
+
+Use the actual paper's scoring rules for historical-paper practice, and clearly explain custom scoring rules for other practice modes.
+
+Show a confirmation before submitting an incomplete exam, with the unanswered count.
+
+8. CHEMISTRY AND BIOLOGY — COMPLETE SUBJECT INTEGRATION
+
+Add Chemistry and Biology alongside Mathematics and Physics.
+
+Integrate both subjects into:
+- Onboarding and subject selection.
+- Chapter/topic selection.
+- Question bank.
+- Custom exams.
+- Historical board-paper practice.
+- Scoring and explanations.
+- Mistake Notebook.
+- Adaptive practice.
+- Daily learning activities.
+- Student progress.
+- Teacher assignments.
+
+Verify the applicable official NCTB curriculum and examination-year syllabus before claiming alignment.
+
+Do not invent chapter lists or assume that historical papers all match the current syllabus.
+
+Support:
+- Chemical subscripts and superscripts.
+- Ion charges.
+- Chemical equations.
+- Mathematical expressions and units.
+- Biology diagrams.
+- Accessible alternative text.
+- Clear mobile rendering.
+
+Publish only reviewed content. Display actual available chapter coverage honestly.
+
+9. MANDATORY BOARD MCQ ARCHIVE: 2020–2025
+
+Build a verified archive of authentic SSC Chemistry and Biology MCQs for every applicable Bangladesh education board and every year from 2020 through 2025, inclusive.
+
+The scope is every MCQ in each applicable verified paper, not a small selection of sample questions.
+
+First create a coverage inventory:
+board × year × subject × applicable paper/set/version.
+
+Establish which boards administered each applicable subject examination in each year.
+
+Do not assume every examination occurred every year. Verify:
+- Cancelled examinations.
+- Subjects not examined.
+- Changed examination formats.
+- Shortened syllabuses.
+- Different paper versions or sets.
+- Cases that are genuinely not applicable.
+
+Record coverage status as:
+- Complete.
+- Partial.
+- Awaiting Source.
+- Not Held.
+- Not Applicable.
+
+Support statuses with evidence.
+
+Do not invent a paper to fill a gap. Do not replace missing authentic questions with AI-generated questions.
+
+10. BOARD QUESTION SOURCING AND AUTHENTICITY
+
+Prefer:
+- Official education-board papers.
+- Authoritative institutional archives.
+- Other documented sources only with provenance and verification.
+
+Confirm an appropriate usage basis before republishing protected papers, scans or diagrams. Do not bypass access restrictions.
+
+For every imported question retain:
+- Examination level.
+- Subject.
+- Board.
+- Year.
+- Paper code, where available.
+- Set/version, where available.
+- Original question number.
+- Language/version.
+- Original wording.
+- Options and their original order.
+- Diagram references.
+- Source URL or source-file reference.
+- Relevant page number where available.
+- Review status and reviewer record.
+- Syllabus context.
+- Chapter/topic mapping.
+
+Use OCR only as a transcription aid.
+
+Before publishing, compare every question against the source:
+- Bengali text.
+- Numbers.
+- Signs.
+- Options.
+- Formulas.
+- Diagrams.
+- Units.
+- Question numbering.
+
+Distinguish:
+- Official answer keys.
+- Independently reviewed answers.
+- AI-generated drafts.
+
+Never call an unofficial answer an official board answer.
+
+Flag ambiguous or conflicting answers for review and exclude unresolved items from scored exams.
+
+Preserve historical wording. Show corrections and syllabus notes separately instead of silently altering the original question.
+
+11. SETS, DUPLICATES AND COVERAGE VERIFICATION
+
+Preserve the original paper structure and ordering.
+
+Where multiple sets contain equivalent questions:
+- Retain set-specific mappings and option order.
+- Link equivalent questions to canonical content when suitable.
+- Do not inflate unique-question counts.
+- Preserve the correct answer mapping for each option order.
+
+Provide a protected import workflow that is:
+- Resumable.
+- Idempotent.
+- Duplicate-aware.
+- Reviewable.
+- Auditable.
+
+Keep unverified imports as drafts.
+
+Provide a coverage matrix showing:
+- Expected MCQ count from the verified paper.
+- Sourced count.
+- Transcribed count.
+- Reviewed count.
+- Published count.
+- Missing questions.
+- Source references.
+- Outstanding issues.
+
+Do not claim “all boards, all questions complete” until the applicable matrix has been reconciled against verified sources.
+
+The complete 2020–2025 archive remains required scope. If it cannot be sourced and reviewed within the launch window, publish only the verified subset, show honest coverage publicly and report the remaining work explicitly.
+
+12. BOARD ARCHIVE STUDENT EXPERIENCE
+
+Add filters for:
+- Chemistry or Biology.
+- Board.
+- Year.
+- Chapter.
+- Topic.
+- Available paper/set/version.
+
+Provide:
+- Practice a Complete Board Paper.
+- Practice This Chapter Across Boards.
+- Practice This Topic Across Years.
+- Review Previous Mistakes.
+
+When reproducing a complete historical paper:
+- Preserve the verified question count.
+- Use applicable instructions and timing.
+- Identify the board, year and paper version.
+
+Clearly label mixed selections as custom practice, not an original board paper.
+
+Show historical syllabus context and current-syllabus relevance where reviewed.
+
+Connect board-question attempts to the same result and mistake-review system as other exams.
+
+13. MISTAKE NOTEBOOK AND ADAPTIVE REVISION
+
+Turn the notebook into an actionable revision tool.
+
+For each mistake allow:
+- “I did not understand the concept.”
+- “Calculation error.”
+- “Misread the question.”
+- “Ran out of time.”
+- “Guessed.”
+
+Do not infer a student's mistake reason with certainty without their input.
+
+Provide:
+- Hint first.
+- Full reviewed explanation on request.
+- Retry.
+- A different question testing the same concept.
+- Scheduled review.
+
+Use configurable initial review intervals such as 1, 3 and 7 days, adjusted by performance.
+
+Mark a concept as improving or mastered only with appropriate evidence from repeated independent attempts.
+
+Avoid claiming mastery from one correct response.
+
+Display meaningful progress:
+“You previously solved 1 of 5 questions on this concept; your latest comparable practice was 4 of 5.”
+
+Only show such comparisons when supported by actual records.
+
+14. SMALL, COMPLETE INTERACTIVE ACTIVITIES
+
+Prioritize three activities that reuse the verified question bank.
+
+A. আজকের ১০ মিনিট — Daily Practice
+- Combine due mistakes with new questions.
+- Keep the session short and finite.
+- Explain the purpose of each section.
+- Finish with an honest progress summary and next recommendation.
+
+B. ভুলের গোয়েন্দা — Find the Mistake
+- Show a reviewed worked solution containing one intentional error.
+- Ask the student to identify the incorrect step.
+- Let them explain or choose the correction.
+- Reveal why the step is wrong.
+
+C. ভুলের রিম্যাচ — Mistake Rematch
+- Select a different reviewed question on a previously missed concept.
+- Use new numbers or context where appropriate.
+- Do not reward memorization of the exact answer as proof of mastery.
+
+Rewards:
+- Reward meaningful improvement, valid practice and useful explanations.
+- Prevent duplicate rewards.
+- Do not reward idle time or repeated easy-question farming.
+- Avoid punitive streak loss and endless scrolling.
+
+If all launch-critical work is complete, add an asynchronous five-question friend challenge:
+- Both participants receive the same saved question set.
+- Use secure, expiring invitations.
+- Enforce participant privacy.
+- Score server-side.
+- Reveal results fairly after submission or the configured deadline.
+- Do not describe asynchronous play as live multiplayer.
+
+Defer public feeds, open chat, voice submissions, large simulation libraries and school leagues until the core release is stable.
+
+15. TEACHER DASHBOARD
+
+Deliver a minimal complete teacher workflow:
+- Create an owned batch.
+- Generate a secure join code.
+- Let authenticated students join through a validated flow.
+- Create or select an exam.
+- Assign it to a batch.
+- Set availability and deadlines.
+- Receive student submissions.
+- View assignment results.
+- Identify commonly missed concepts in that batch.
+
+Show teachers only their own authorized batches and assignment records.
+
+Do not expose:
+- Global student directories.
+- Other teachers' batches.
+- Students' unrelated private study history.
+- Private AI conversations.
+
+Provide useful empty states for newly registered teachers.
+
+Keep teacher-administered assignments distinct from a student's personal practice limits.
+
+16. AI STUDY COACH
+
+Use current-question context and authorized student learning records only.
+
+Prefer:
+- Short Bengali hints.
+- Small guiding questions.
+- Step-by-step explanation when requested.
+- A follow-up practice question from reviewed content.
+
+Provide quick actions:
+- “আরও সহজ বাংলায় বুঝাও”
+- “একটি উদাহরণ দাও”
+- “শুধু hint দাও”
+- “আমাকে পরীক্ষা করো”
+
+Do not invent:
+- Textbook citations.
+- Board provenance.
+- Student weaknesses.
+- Past performance.
+- Syllabus alignment.
+
+Clearly distinguish reviewed answer-bank explanations from generated guidance.
+
+Keep API credentials server-side.
+
+Add:
+- Authentication where required.
+- Rate limits.
+- Usage quotas.
+- Request timeouts.
+- Retry feedback.
+- Cost monitoring.
+- Controls preventing unrelated users' data from entering the prompt.
+
+Do not charge a successful-response quota for failed AI requests.
+
+If the AI service is unavailable, preserve access to reviewed explanations and ordinary question-bank practice.
+
+17. PRICING AND ENTITLEMENTS
+
+Implement these as configurable proposed launch plans, not hardcoded assumptions about permanent pricing.
+
+Free:
+- BDT 0.
+- 20 personal practice question attempts per day.
+- Basic results.
+- Mistake Notebook.
+- Daily activity.
+- Access across available subjects and verified content.
+
+Student Plus:
+- BDT 149 for 30 days.
+- Up to 200 personal practice question attempts per day.
+- Custom exams.
+- Adaptive revision.
+- Detailed progress.
+- 100 successful AI coach responses per paid 30-day period.
+
+Teacher Beta:
+- Free for the first 30 days.
+- One batch.
+- Up to 50 students.
+- Assignment creation and basic reports.
+
+Initial Student Beta:
+- A clearly explained 14-day beta-feature trial.
+- No automatic charge.
+- Show trial expiry and subsequent Free limits honestly.
+
+Define what consumes a question attempt. Avoid charging again for refresh, network retries or viewing an existing explanation.
+
+Reserve sufficient quota before starting an exam; do not interrupt it halfway due to a quota boundary.
+
+Teacher-assigned exams must not unexpectedly become inaccessible because a student used their personal practice allowance. Apply separate reasonable server-enforced assignment limits.
+
+Enforce entitlements server-side.
+
+Use clear Asia/Dhaka-based daily reset behavior and display it accurately. Define 30-day plan duration separately from daily resets.
+
+Preserve access to previously saved results after expiry.
+
+Do not implement annual or lifetime plans in the initial release.
+
+Measure real AI, hosting, payment and support costs so the owner can revise limits and pricing based on actual usage.
+
+18. PAYMENTS
+
+Use an existing supported payment integration if one is configured.
+
+Never:
+- Simulate successful payments.
+- Unlock Plus from a client-side success screen alone.
+- Accept a typed transaction ID as proof of payment.
+- Store payment secrets in frontend code.
+
+Verify payments server-side using the provider's supported verification mechanism.
+
+Handle:
+- Success.
+- Failure.
+- Cancellation.
+- Pending status.
+- Duplicate provider notifications.
+- Delayed notifications.
+- Amount, currency and order mismatches.
+- Expiry.
+
+Make payment processing and entitlement grants idempotent.
+
+Display:
+- Total payable amount.
+- Access duration.
+- Included limits.
+- Renewal behavior.
+- Support and refund information.
+
+Do not promise automatic renewal unless it is implemented and explicitly accepted.
+
+If merchant approval, credentials or provider setup are missing:
+- Keep checkout disabled.
+- Explain the limitation honestly.
+- Keep the free beta operational.
+- Report the exact dependency.
+- Do not insert fake payment functionality.
+
+19. PERFORMANCE AND LOADING
+
+Measure:
+- Initial page readiness.
+- Exam preparation time.
+- Question navigation latency.
+- Answer-save latency.
+- Result-generation time.
+- AI response time.
+
+Report the tested environment and conditions.
+
+Optimize using:
+- Appropriate database queries and indexes.
+- Efficient question selection.
+- Preloaded exam content.
+- Lazy loading of nonessential interface sections.
+- Compressed, appropriately sized images.
+- Safe caching of public/static content.
+- Correct isolation of private cached data.
+
+Do not fetch or generate each question only after Next is pressed if the question set can be prepared beforehand.
+
+Show meaningful loading states without invented percentages.
+
+Add retry paths that preserve selections and saved work.
+
+Guard against duplicate requests caused by repeated clicking.
+
+Keep the application useful on slower mobile connections.
+
+20. LANGUAGE, MOBILE AND ACCESSIBILITY
+
+Use consistent Bengali interface text with optional English support.
+
+Translate:
+- Navigation.
+- Buttons.
+- Exam instructions.
+- Validation.
+- Loading messages.
+- Results.
+- Empty states.
+- Errors.
+- Pricing descriptions.
+
+Retain original source language for historical questions and label any reviewed translation separately.
+
+Test at 360px and 390px mobile widths and desktop.
+
+Fix:
+- Horizontal overflow.
+- Unreadable formulas.
+- Excessive blank space above questions.
+- Obscured controls.
+- Difficult Next/Previous access.
+- Small touch targets.
+- Unlabelled icon buttons.
+
+Support:
+- Keyboard navigation.
+- Accessible form labels.
+- Visible focus.
+- Readable contrast.
+- Reduced motion.
+- Diagram alternative text.
+
+21. PUBLIC TRUST AND BASIC OPERATIONS
+
+Remove or substantiate claims such as:
+- 50K+ students.
+- 1K+ teachers.
+- 100K+ questions.
+- 98% satisfaction.
+- Fixed class averages.
+- Verified anti-cheat.
+- Real-time multiplayer.
+
+Only show metrics derived from valid records with clear meaning.
+
+Add:
+- Help/support.
+- Feedback.
+- Question-error reporting.
+- Privacy information.
+- Terms.
+- Account/data support process.
+- Clear pricing.
+
+Do not invent business details, addresses, contact information or legal commitments.
+
+Protect admin content-upload controls from public access.
+
+Collect minimal student data and do not publish private contact information.
+
+Use operational monitoring that avoids unnecessarily logging sensitive student data, credentials or complete private conversations.
+
+Provide recoverability through appropriate backups and safe deployment/migration procedures.
+
+22. REQUIRED VERIFICATION
+
+Test the full user journey, not only isolated components.
+
+Authentication:
+- Student registration/login → student dashboard.
+- Teacher registration/login → teacher dashboard.
+- Guest → restricted demo.
+- Student A cannot read Student B's records.
+- Teacher A cannot read Teacher B's batch.
+- Student cannot access teacher/admin routes or APIs.
+- Client role tampering is rejected.
+- Logout and account switching clear private state.
+
+Exams:
+- A complete exam in each available subject.
+- Requested versus actual question count.
+- Empty and insufficient question pools.
+- No duplicate questions.
+- All unanswered.
+- Partially answered.
+- All correct.
+- Incorrect answers.
+- Refresh and reconnect.
+- Timer expiry.
+- Repeated submission.
+- Correct result-to-notebook transfer.
+- Correct topic analytics.
+
+Board archive:
+- Source-to-transcription spot checks and required full review records.
+- Original question numbering and option order.
+- Formula and diagram rendering.
+- Set-specific answer mapping.
+- Duplicate handling.
+- Coverage counts.
+- Historical versus current-syllabus labeling.
+- No unreviewed content in scored exams.
+
+Teacher flow:
+- Create batch → student joins → assign exam → student submits → teacher sees authorized result.
+
+Activities:
+- Daily session uses real data.
+- Mistake Detective has a reviewed error and explanation.
+- Rematch tests the intended concept.
+- Rewards are not duplicated.
+
+AI:
+- Successful response.
+- Timeout/failure.
+- Quota exhaustion.
+- Failed request does not consume success quota.
+- No cross-account context leakage.
+
+Payments, if enabled:
+- Verified success.
+- Failure and cancellation.
+- Duplicate notification.
+- Wrong amount/order rejection.
+- Expiry.
+- Correct entitlement.
+- No client-side bypass.
+
+Mobile:
+- 360px.
+- 390px.
+- Desktop.
+- Exam controls, formulas, diagrams and result review remain usable.
+
+Use isolated test accounts and test data. Do not run destructive tests against real student records.
+
+23. IMPLEMENTATION ORDER FOR THE 2–3 DAY TARGET
+
+Day 1 target:
+- Inspect and checkpoint.
+- Repair authentication and role access.
+- Isolate demo data.
+- Fix grading, review and question-count inconsistencies.
+- Establish the board-paper coverage inventory.
+
+Day 2 target:
+- Integrate Chemistry and Biology.
+- Import and review available authentic questions.
+- Complete exam persistence and question selection.
+- Improve Mistake Notebook.
+- Implement the small learning activities.
+- Complete the basic teacher flow.
+
+Day 3 target:
+- End-to-end validation.
+- Access-control tests.
+- Mobile and loading fixes.
+- Pricing/entitlement verification.
+- Payment readiness if configuration exists.
+- Coverage reporting and launch assessment.
+
+Continue archive verification as required. Do not treat incomplete source collection as completed work.
+
+If the schedule is tight, defer optional social activities before cutting authorization, grading, persistence or content review.
+
+24. FINAL DELIVERABLES
+
+Provide:
+1. A concise list of implemented changes.
+2. What remained unchanged in the existing interface.
+3. Meaningful test results and evidence.
+4. Measured performance findings and limitations.
+5. Subject/chapter availability.
+6. The complete board × year × subject coverage matrix.
+7. Verified versus pending question counts.
+8. Remaining defects.
+9. Missing credentials, source documents or owner-supplied details.
+10. Payment readiness status.
+11. A clear public-beta ready/not-ready recommendation.
+12. Any specific conditions that must be satisfied before publication.
+
+Do not claim “fully complete,” “all board questions added,” “secure,” or “production ready” without evidence matching that claim.
+
+Finish with the actual state of the product, not a generic success message.

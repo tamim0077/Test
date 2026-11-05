@@ -1,0 +1,21 @@
+{
+  "name": "ExamDNA BD - স্মার্ট পরীক্ষা প্রস্তুতি",
+  "short_name": "ExamDNA BD",
+  "description": "তোমার ভুলই তোমার পরবর্তী প্রস্তুতি। SSC 2027 ও শিক্ষক সহায়ক AI প্ল্যাটফর্ম।",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F8FAFC",
+  "theme_color": "#2563EB",
+  "icons": [
+    {
+      "src": "/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}

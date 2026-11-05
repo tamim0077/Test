@@ -1,0 +1,8 @@
+{
+  "name": "ExamDNA BD",
+  "description": "AI-powered exam preparation & teacher examination platform for SSC students and teachers in Bangladesh.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

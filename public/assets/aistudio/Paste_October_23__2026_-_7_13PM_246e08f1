@@ -1,0 +1,1178 @@
+# MASTER BUILD PROMPT: ExamDNA BD
+## Build a Premium AI-Powered Exam Preparation & Teacher Examination Platform for Bangladesh
+
+### 1. YOUR ROLE
+
+Act as an elite full-stack software engineer, AI engineer, product designer, UI/UX specialist, database architect, and educational technology expert.
+
+Your task is to **DESIGN AND BUILD** a fully functional, production-oriented, mobile-first AI examination web application called **ExamDNA BD**.
+
+This product is specifically designed for Bangladeshi students and teachers.
+
+I am a nontechnical founder with almost zero starting budget. I do not know programming, databases, backend development, or API integration.
+
+You must handle the technical implementation, architecture, UI/UX, database integration, and debugging as much as your environment allows.
+
+**IMPORTANT: I want a working application, not a Figma design, wireframe, static mockup, conceptual explanation, or landing page.**
+
+Do not stop after designing the homepage. Build the actual interactive functionality.
+
+Work incrementally, but continue implementing the complete requested MVP rather than simply producing a plan.
+
+---
+
+# 2. PRODUCT IDENTITY
+
+**Name:** ExamDNA BD
+
+**Main Tagline:** তোমার ভুলই তোমার পরবর্তী প্রস্তুতি।
+
+**Secondary Tagline:** পরীক্ষা দাও, ভুল বোঝো, নিজেকে এগিয়ে নাও।
+
+**Product Category:** AI-powered EdTech SaaS.
+
+**Target Country:** Bangladesh.
+
+**Primary Users:**
+- SSC students
+- HSC students
+- University admission candidates
+- School teachers
+- Coaching teachers
+- Educational institutions
+
+**Initial Launch Target:** SSC 2027 students and their teachers.
+
+The platform must be designed to expand into HSC and university admission preparation without requiring a complete rebuild.
+
+## Core Product Vision
+
+ExamDNA BD is an intelligent examination platform where teachers can create exams without manually writing questions, while students receive personalized practice based on their learning weaknesses.
+
+Unlike basic quiz apps, ExamDNA BD must remember student mistakes, track concept-level mastery, analyze verified historical exam-question patterns, and recommend targeted practice.
+
+The central product experience must be:
+
+**Teacher selects a topic → AI analyzes relevant approved historical questions → Exam is generated → Teacher reviews → Students take the exam → AI analyzes mistakes → Students practice weak topics.**
+
+---
+
+# 3. TECHNOLOGY & ZERO-BUDGET REQUIREMENTS
+
+Build a modern Progressive Web Application.
+
+Preferred stack:
+
+- React with TypeScript
+- Tailwind CSS
+- Modern accessible UI components
+- Firebase Authentication
+- Firebase Firestore
+- Secure server-side API routes
+- Gemini API for selected AI features
+- PWA support
+- Free-tier-compatible hosting where practical
+
+Use the native full-stack capabilities of the chosen AI building environment where appropriate.
+
+Prioritize:
+
+1. Working functionality.
+2. Free-tier compatibility.
+3. Security.
+4. Academic accuracy.
+5. Fast mobile performance.
+6. A clean and maintainable codebase.
+
+Do not require paid subscriptions for basic prototype functionality.
+
+Do not activate paid billing, paid cloud infrastructure, or paid API services without explicit approval.
+
+If a feature cannot safely operate under the available free infrastructure, implement an honest demo or disabled state, explain the limitation, and keep the architecture ready for later activation.
+
+Never expose secret AI API keys in the browser.
+
+All final exam scoring and access to answer keys must be protected by server-side logic.
+
+A Firebase public configuration object is not a secret, but Firestore security rules and sensitive operations must still be implemented properly.
+
+---
+
+# 4. DESIGN SYSTEM
+
+Create an extremely polished, premium educational interface.
+
+The website should look like a professionally funded EdTech startup.
+
+## Visual Style
+
+- Minimalist.
+- Modern.
+- Professional.
+- Clean.
+- Mobile-first.
+- Premium white and blue aesthetic.
+- Highly readable Bengali text.
+- Smooth and purposeful micro-interactions.
+- Beautiful data visualizations.
+
+## Brand Colors
+
+Primary Blue: #2563EB  
+Deep Navy: #0F172A  
+Background: #F8FAFC  
+White: #FFFFFF  
+Success Green: #16A34A  
+Warning Orange: #F59E0B  
+Error Red: #EF4444
+
+Use Noto Sans Bengali or another excellent Bengali-compatible font.
+
+English interface labels may use Inter.
+
+## UI Requirements
+
+- Fully responsive.
+- Beautiful mobile navigation.
+- Desktop sidebar navigation.
+- Subtle animations.
+- Skeleton loading states.
+- Hover and tap feedback.
+- Consistent rounded cards.
+- Attractive exam statistics.
+- Clear empty states.
+- Light theme by default.
+- Accessible color contrast.
+- Support narrow smartphone screens.
+
+The website must feel excellent on both Android and iPhone.
+
+Avoid excessive animation that slows down low-end phones.
+
+---
+
+# 5. PUBLIC LANDING PAGE
+
+Create a stunning homepage explaining ExamDNA BD.
+
+## Hero Section
+
+Main Headline:
+
+**পরীক্ষার প্রস্তুতি এবার আরও স্মার্ট।**
+
+Subheadline:
+
+**AI দিয়ে পরীক্ষা দাও, নিজের দুর্বলতা খুঁজে বের করো, আর প্রতিদিন আরও ভালো করো।**
+
+Primary CTA:
+
+**ফ্রি পরীক্ষা শুরু করো**
+
+Secondary CTA:
+
+**আমি একজন শিক্ষক**
+
+Include a premium animated dashboard preview.
+
+## Additional Sections
+
+1. How ExamDNA Works.
+2. AI-Powered Exam Preparation.
+3. Smart Mistake Notebook.
+4. AI Board Pattern Exam Generator.
+5. Challenge Your Friends.
+6. Teacher Dashboard.
+7. Frequently Asked Questions.
+8. Footer.
+
+Never use fake testimonials, fake student statistics, or unsupported success claims.
+
+---
+
+# 6. USER ROLES
+
+Build separate experiences for:
+
+### A. Student
+
+Students can:
+
+- Take exams.
+- Review results.
+- Save mistakes.
+- Practice weak concepts.
+- Track progress.
+- Join teacher batches.
+- Challenge friends.
+- View achievements.
+
+### B. Teacher
+
+Teachers can:
+
+- Create batches.
+- Select exam topics.
+- Generate questions.
+- Review questions.
+- Publish exams.
+- Invite students.
+- View student results.
+- Analyze class performance.
+
+### C. Administrator
+
+Admin can:
+
+- Manage question banks.
+- Review imported papers.
+- Approve questions.
+- Manage syllabus mappings.
+- Flag incorrect answers.
+- Moderate public content.
+- Monitor usage.
+
+Use role-based access control.
+
+Students must not be able to open another student's private performance data.
+
+---
+
+# 7. STUDENT ONBOARDING
+
+Create an engaging onboarding experience.
+
+## Step 1: Choose Examination
+
+Options:
+
+- SSC
+- HSC
+- University Admission
+
+## Step 2: Select Group
+
+For SSC/HSC:
+
+- Science
+- Business Studies
+- Humanities
+
+## Step 3: Select Exam Year
+
+For example:
+
+- SSC 2027
+- SSC 2028
+
+## Step 4: Select Subjects
+
+Display curriculum-mapped subjects appropriate to the selected track.
+
+## Step 5: Create Profile
+
+Request:
+
+- Nickname.
+- Optional email or supported sign-in.
+- Exam category.
+- Exam year.
+
+Do not unnecessarily collect date of birth, home address, institution ID, or other sensitive information.
+
+Allow a guest to take a trial diagnostic exam.
+
+For MVP, activate only the initial verified SSC subject and clearly mark other subject tracks as coming soon.
+
+---
+
+# 8. STUDENT DASHBOARD
+
+Create a visually polished, interactive dashboard.
+
+## Main Components
+
+### Welcome Section
+
+Example:
+
+"স্বাগতম! আজ তোমার প্রস্তুতি কেমন চলছে?"
+
+### Readiness Overview
+
+Show:
+
+- Practice mastery score.
+- Total completed exams.
+- Average accuracy.
+- Current study streak.
+- Revision questions due.
+- Strongest topic.
+- Weakest topic.
+
+Never claim that the mastery score predicts the student's final board examination result.
+
+### Quick Actions
+
+- Start Diagnostic Exam
+- Adaptive AI Practice
+- Review Mistakes
+- Join Teacher Exam
+- Challenge a Friend
+
+### Subject Progress
+
+Create beautiful progress indicators for each active subject.
+
+### Personalized Suggestions
+
+Examples:
+
+"তুমি গত তিনটি পরীক্ষায় একই concept-এ ভুল করেছো। এই topic-টা আবার practice করো।"
+
+"আজ তোমার ৫টি revision question বাকি আছে।"
+
+These suggestions must be derived from recorded student performance.
+
+---
+
+# 9. AI DIAGNOSTIC EXAM
+
+Students should be able to take a diagnostic exam to identify topic-level weaknesses.
+
+## Exam Setup
+
+Allow:
+
+- Subject selection.
+- Topic selection.
+- Question count.
+- Difficulty preference.
+- Exam duration.
+
+The first diagnostic exam should contain 12 questions across three relevant topics.
+
+## Exam Interface
+
+Display:
+
+- Question number.
+- Countdown timer.
+- Question text.
+- Four MCQ options.
+- Previous button.
+- Next button.
+- Skip option.
+- Submit button.
+- Question navigation panel.
+- Answered/unanswered status.
+
+## Exam Rules
+
+- Save answers safely.
+- Do not reveal correct answers before submission.
+- Automatically submit when the timer expires.
+- Allow accidental refresh recovery where feasible.
+- Prevent duplicate grading.
+- Calculate scores on the server.
+
+After the exam, show a detailed result page.
+
+---
+
+# 10. EXAM RESULT & ANALYTICS
+
+After submission, show:
+
+- Total score.
+- Correct answers.
+- Incorrect answers.
+- Unanswered questions.
+- Accuracy.
+- Time taken.
+- Topic-wise performance.
+- Mistake categories.
+- Suggested next practice.
+
+Use graphs, progress bars, and visual indicators.
+
+## Example
+
+Score: 24/30  
+Accuracy: 80%  
+Strong Topic: Motion  
+Weak Topic: Newton's Laws
+
+These are demonstration values only.
+
+## AI Explanation
+
+Explain:
+
+- Why the correct answer is correct.
+- Why a selected incorrect answer does not satisfy the question.
+- Which concept should be revised.
+- What kind of practice should be attempted next.
+
+All explanations must be grounded in verified question data.
+
+---
+
+# 11. SMART MISTAKE NOTEBOOK
+
+Create a dedicated personal mistake notebook.
+
+Every incorrect answer should automatically be stored.
+
+## Each Mistake Entry
+
+Include:
+
+- Original question.
+- Student's selected answer.
+- Verified correct answer.
+- Explanation.
+- Subject.
+- Chapter.
+- Topic.
+- Date.
+- Number of incorrect attempts.
+- Revision status.
+
+## Functions
+
+Students can:
+
+- Review mistakes.
+- Retry questions.
+- Filter by topic.
+- Ask AI for a simpler explanation.
+- Mark concepts for further revision.
+- Track improvement.
+
+Implement a basic spaced repetition system.
+
+Suggested review intervals:
+
+- First review: next day.
+- Second review: after three days.
+- Third review: after seven days.
+
+Adjust based on actual practice performance.
+
+---
+
+# 12. ADAPTIVE AI PRACTICE ENGINE
+
+This is one of the core differentiators.
+
+Build an intelligent question-selection system that prioritizes students' weak topics.
+
+## How It Works
+
+Analyze:
+
+- Previous scores.
+- Mistake frequency.
+- Topic accuracy.
+- Recent performance.
+- Revision history.
+- Question difficulty.
+
+## Example
+
+A student repeatedly performs poorly in Newton's Laws.
+
+Instead of generating completely random physics questions, ExamDNA should recommend additional verified questions from that concept.
+
+## Question Selection
+
+For a 10-question adaptive quiz:
+
+- Approximately 60% weak-topic questions.
+- Approximately 25% developing-topic questions.
+- Approximately 15% strong or unassessed-topic questions.
+
+Adjust these percentages when enough eligible questions are unavailable.
+
+Avoid repeating identical questions unnecessarily.
+
+Allow students to compare improvement across attempts.
+
+---
+
+# 13. TEACHER DASHBOARD
+
+This is the most important commercial feature.
+
+Build a professional teacher workspace.
+
+## Teacher Home
+
+Show:
+
+- Total batches.
+- Total students.
+- Active exams.
+- Completed exams.
+- Average class performance.
+- Recent results.
+
+## Create a Batch
+
+Fields:
+
+- Batch name.
+- Class.
+- Subject.
+- Academic year.
+- Optional description.
+
+Example:
+
+"SSC 2027 Physics Batch A"
+
+Generate a private batch invitation code and link.
+
+## Student Enrollment
+
+Students should be able to join using a valid batch link or code.
+
+Teachers can view their own enrolled students.
+
+Do not allow teachers to access unrelated students' private information.
+
+---
+
+# 14. AI BOARD PATTERN EXAM GENERATOR
+
+**THIS IS THE PLATFORM'S MOST IMPORTANT FEATURE.**
+
+Teachers should be able to create examination papers by entering only a subject, chapter, topic, and exam configuration.
+
+Teachers should not need to manually write questions.
+
+## Exam Creation Form
+
+Include:
+
+### Examination Level
+
+- SSC Level
+- HSC Level
+- Admission Level
+- Both / Combined Level
+
+For MVP, implement SSC first.
+
+### Subject
+
+Example:
+
+Physics.
+
+### Chapter
+
+Example:
+
+Motion.
+
+### Topic
+
+Example:
+
+Newton's Laws of Motion.
+
+### Question Count
+
+Options:
+
+- 10
+- 20
+- 30
+- 50
+- Custom
+
+### Difficulty
+
+Options:
+
+- Easy
+- Medium
+- Hard
+- Balanced
+- AI Recommended
+
+### Exam Format
+
+- MCQ
+- Written / CQ
+- Mixed
+
+Initially implement graded MCQ fully; mark CQ grading as a future feature.
+
+### Historical Analysis Period
+
+- Previous 3 years
+- Previous 5 years
+- Custom imported papers
+
+### Exam Time Limit
+
+Configurable.
+
+### Exam Pattern
+
+- Board Style
+- Concept Mastery
+- Admission Challenge
+- Teacher Custom
+
+Do not present unsupported question patterns as officially verified.
+
+---
+
+# 15. HISTORICAL BOARD QUESTION ANALYSIS SYSTEM
+
+Build an architecture that supports analyzing previous board examination questions.
+
+## Question Data Sources
+
+- Legally obtained historical examination papers.
+- Approved NCTB textbook materials.
+- Official syllabus information.
+- Teacher-approved question collections.
+
+Do not fabricate historical board questions.
+
+Do not claim to have analyzed a year or board unless that source has actually been imported and processed.
+
+## Admin Data Import
+
+Allow an authorized admin to upload or import question documents.
+
+Support PDF import where technically feasible.
+
+Provide an import preview that allows human correction of extraction errors.
+
+For each imported question, store:
+
+- Year.
+- Board.
+- Subject.
+- Chapter.
+- Topic.
+- Original question.
+- Question type.
+- Difficulty.
+- Source reference.
+- Source page.
+- Verification status.
+
+Implement a review workflow before data becomes eligible for public exams.
+
+## AI Pattern Analysis
+
+The analysis engine should identify:
+
+1. Common concepts tested.
+2. Question structures.
+3. Difficulty patterns.
+4. Frequently assessed skills.
+5. Variations in numerical problems.
+6. Common reasoning patterns.
+7. Topic coverage across imported examination years.
+
+Calculate observed frequencies from actual stored data.
+
+If there is insufficient verified historical data, clearly show:
+
+"পর্যাপ্ত যাচাইকৃত বোর্ড প্রশ্নের তথ্য নেই।"
+
+Do not manufacture frequency statistics.
+
+---
+
+# 16. AUTOMATIC QUESTION GENERATION
+
+Once a teacher selects a topic, ExamDNA should:
+
+**Step 1:** Retrieve relevant approved syllabus material and historical questions.
+
+**Step 2:** Analyze question patterns and concepts.
+
+**Step 3:** Create a question blueprint.
+
+**Step 4:** Draft new questions using AI.
+
+**Step 5:** Validate academic accuracy.
+
+**Step 6:** Detect duplicate or near-duplicate questions.
+
+**Step 7:** Present approved questions or flagged drafts for teacher review.
+
+**Step 8:** Publish the exam once approved.
+
+## Example
+
+Teacher selects:
+
+SSC → Physics → Newton's Laws → 30 MCQs.
+
+The system must produce a balanced exam covering relevant concepts with appropriate variations in wording, calculations, and practical scenarios.
+
+It must not merely change numbers randomly.
+
+Each generated question must have:
+
+- Four meaningful options.
+- Exactly one correct answer.
+- Verified or reviewable explanation.
+- Difficulty label.
+- Concept label.
+- Reference to its source concepts.
+- Validation status.
+
+Use deterministic checks for numerical problems wherever possible.
+
+Flag ambiguous or uncertain questions.
+
+Do not silently publish unverified AI-generated questions to students.
+
+---
+
+# 17. AI QUESTION REVIEW PANEL
+
+Create a polished review interface for teachers.
+
+Display generated questions in cards.
+
+Each card should contain:
+
+- Question.
+- Four answer choices.
+- Correct answer.
+- Explanation.
+- Topic.
+- Difficulty.
+- Validation status.
+
+Actions:
+
+- Approve.
+- Reject.
+- Regenerate Draft.
+- Edit.
+- Replace with Approved Question.
+- Report an Error.
+
+The teacher should be able to approve an entire set quickly if all questions have been adequately validated.
+
+Do not automatically mark unverified questions as academically approved.
+
+---
+
+# 18. PUBLISHING TEACHER EXAMS
+
+After teacher approval:
+
+Generate a private exam link.
+
+Example route:
+
+/exam/[exam-id]
+
+The teacher can:
+
+- Assign the exam to a batch.
+- Set a start and end time.
+- Set the duration.
+- Choose whether result feedback is immediate or released later.
+- Shuffle questions and option order.
+- Restrict exam attempts.
+- View submissions.
+- Close the examination.
+
+Students join using their enrolled account or an authorized invitation.
+
+Implement server-side protection against repeated submissions.
+
+The teacher should be able to monitor real exam completion status.
+
+---
+
+# 19. BATCH RESULTS & TEACHER ANALYTICS
+
+After students complete an exam:
+
+Show the teacher:
+
+- Number of participants.
+- Completion rate.
+- Average score.
+- Highest score.
+- Lowest score.
+- Topic-wise accuracy.
+- Most frequently missed questions.
+- Students who may need additional support.
+
+Include:
+
+- Sortable result table.
+- Topic-level performance graphs.
+- Exam comparison.
+- Downloadable CSV report.
+
+Protect individual student information.
+
+Only authorized teachers should see their own batch results.
+
+---
+
+# 20. FRIENDS CHALLENGE SYSTEM
+
+Build a viral-friendly examination challenge feature.
+
+Students should be able to challenge their friends.
+
+## Create Challenge
+
+Options:
+
+- Subject.
+- Topic.
+- Difficulty.
+- Number of questions.
+- Time limit.
+
+Generate a unique challenge link.
+
+## Challenge Experience
+
+Friend opens the link.
+
+They enter a nickname or sign in.
+
+Both participants receive the same approved question set.
+
+After submission, display a result comparison.
+
+## Result Card
+
+Example:
+
+EXAMDNa BD
+
+Physics Challenge
+
+Fizz: 8/10  
+Friend: 7/10
+
+**Can you beat my score?**
+
+Provide:
+
+- Copy Link.
+- Share via supported browser sharing.
+- Download Result Card.
+- Share to Messenger or WhatsApp.
+
+Do not fake challenge scores.
+
+Make result cards visually attractive in a 9:16 format suitable for Facebook Stories.
+
+---
+
+# 21. LEADERBOARD & GAMIFICATION
+
+Include:
+
+- Personal best score.
+- Weekly challenge score.
+- Study streak.
+- Completed exam count.
+- Improvement milestones.
+- Optional private batch leaderboard.
+
+Allow students to choose a nickname.
+
+Do not make sensitive student performance data public without appropriate consent.
+
+Avoid public leaderboards that expose minors' personal identities.
+
+---
+
+# 22. AI PERSONAL STUDY COACH
+
+Implement a student-facing Bangla AI coach.
+
+It should answer questions like:
+
+"আমি এই অঙ্কটা কেন ভুল করলাম?"
+
+"এই chapter-এ আমার কোন concept বেশি দুর্বল?"
+
+"আগামী সাত দিনে কী কী practice করা উচিত?"
+
+The AI coach should use:
+
+- Student performance history.
+- Approved question explanations.
+- Topic metadata.
+- Existing syllabus information.
+
+Do not invent previous scores or study history.
+
+If AI service limits are reached, display a transparent message and keep regular exams functional.
+
+Cache repeated explanations where appropriate to reduce API costs.
+
+---
+
+# 23. DATA STRUCTURE
+
+Design a reliable database with collections or tables for:
+
+- Users
+- UserRoles
+- Subjects
+- Chapters
+- Topics
+- SyllabusVersions
+- QuestionBank
+- QuestionSources
+- HistoricalPapers
+- GeneratedQuestionDrafts
+- QuestionReviews
+- TeacherBatches
+- BatchEnrollments
+- Exams
+- ExamQuestions
+- ExamAttempts
+- StudentAnswers
+- TopicProgress
+- MistakeNotebook
+- RevisionSchedules
+- Challenges
+- ChallengeAttempts
+- ActivityEvents
+
+Implement secure access rules.
+
+Store immutable snapshots of published exam questions and correct-answer versions so historical scores remain consistent.
+
+---
+
+# 24. DEMO CONTENT
+
+For the initial prototype, create a small original sample question bank covering one SSC General Mathematics chapter.
+
+Use academically sound, self-contained MCQs.
+
+Clearly label the sample content:
+
+"Demo Question Bank — Requires Teacher Review."
+
+Do not label generated examples as authentic historical board questions.
+
+Include enough diverse questions to demonstrate:
+
+- Diagnostic examinations.
+- Teacher-created exams.
+- Topic-based filtering.
+- Mistake detection.
+- Adaptive practice.
+- Friend challenges.
+
+Ensure answer keys, mathematical solutions, and explanations are internally consistent.
+
+For the teacher's historical analysis panel, show an honest empty state until verified historical papers are imported.
+
+---
+
+# 25. PWA & MOBILE EXPERIENCE
+
+Make ExamDNA installable as a Progressive Web App.
+
+Requirements:
+
+- App manifest.
+- App icon.
+- Mobile-friendly viewport.
+- Responsive exam interface.
+- Fast loading.
+- Home-screen installation support.
+- Proper navigation behavior.
+- Cached static assets where appropriate.
+
+The application must work in modern Android Chrome, iPhone Safari, and desktop browsers.
+
+Do not require users to install a native application.
+
+Ensure online exams do not silently submit or lose answers during temporary connectivity issues.
+
+---
+
+# 26. ADMIN PANEL
+
+Create a basic protected admin panel.
+
+Features:
+
+- Add questions.
+- Review generated questions.
+- Import historical questions.
+- Manage subject and topic metadata.
+- Approve question sets.
+- Review flagged content.
+- Correct erroneous questions.
+- View basic system analytics.
+
+Keep the admin interface inaccessible to ordinary students.
+
+---
+
+# 27. SECURITY & QUALITY
+
+Because students may be under 18:
+
+- Collect minimal personal data.
+- Protect user records.
+- Use proper authentication and authorization.
+- Restrict access to teacher and admin functionality.
+- Keep answer keys inaccessible before submission.
+- Protect AI endpoints from abuse.
+- Apply rate limits.
+- Prevent duplicated exam submissions.
+- Sanitize input.
+- Avoid exposing secret credentials.
+- Support account/data deletion workflows.
+- Provide a question-error reporting mechanism.
+
+Never invent academic success statistics.
+
+Clearly label AI-generated explanations where appropriate.
+
+---
+
+# 28. REQUIRED FUNCTIONAL TESTS
+
+The application must pass the following scenarios:
+
+**Test 1:** Teacher creates a batch and receives a valid invite link.
+
+**Test 2:** Student joins the teacher's batch.
+
+**Test 3:** Teacher selects a topic and creates an exam using available approved questions.
+
+**Test 4:** Student opens the exam, answers questions, and submits.
+
+**Test 5:** The server calculates the correct score.
+
+**Test 6:** Incorrect answers appear in the student's Mistake Notebook.
+
+**Test 7:** Adaptive Practice prioritizes the student's weak topics.
+
+**Test 8:** Teacher sees the student's submitted results.
+
+**Test 9:** Student generates a working friend challenge link.
+
+**Test 10:** A friend completes the same challenge and sees the genuine score comparison.
+
+**Test 11:** Refreshing the exam does not silently erase saved answers.
+
+**Test 12:** An ordinary student cannot access another student's private results or teacher administration.
+
+**Test 13:** If historical board papers are unavailable, the system never pretends to have analyzed them.
+
+**Test 14:** AI-generated questions cannot enter a live graded examination without the required validation and approval.
+
+Fix any issues discovered during testing.
+
+---
+
+# 29. DEVELOPMENT ORDER
+
+Build the application in the following sequence.
+
+## Phase 1: Functional Foundation
+
+- Project setup.
+- Design system.
+- Landing page.
+- User authentication.
+- Student and teacher dashboards.
+- Database integration.
+
+## Phase 2: Working Exam Engine
+
+- Question bank.
+- Diagnostic exams.
+- Timers.
+- Answer saving.
+- Server-side scoring.
+- Result pages.
+- Mistake Notebook.
+
+## Phase 3: Teacher SaaS
+
+- Batch creation.
+- Student enrollment.
+- Teacher exam builder.
+- Exam publishing.
+- Batch results and analytics.
+
+## Phase 4: Intelligent Features
+
+- Adaptive quizzes.
+- AI explanations.
+- Question generation.
+- Question validation.
+- Historical paper import.
+- Board-pattern analysis interface.
+
+## Phase 5: Viral Growth
+
+- Friend challenges.
+- Shareable scorecards.
+- Private leaderboards.
+- PWA installation.
+- Mobile polish.
+
+Implement each phase with working code and test it before moving on.
+
+Do not create decorative screens that imply unavailable functionality is working.
+
+Where an external API or account configuration is required, clearly identify the exact missing configuration while completing all other possible implementation work.
+
+---
+
+# 30. FINAL DELIVERY
+
+The final application should provide:
+
+1. A working mobile-first web application.
+2. A usable student dashboard.
+3. A functional teacher dashboard.
+4. Real MCQ exam-taking functionality.
+5. Database-backed exam results.
+6. Persistent student mistakes.
+7. Adaptive question selection.
+8. Friend challenge links.
+9. An AI exam-generation workflow with approval controls.
+10. A historical question-analysis system that operates only on genuinely imported sources.
+11. Responsive design for mobile and desktop.
+12. Instructions to deploy using available free-tier resources.
+13. A clear list of features that work, require configuration, or are planned for later.
+
+Do not claim the entire platform is finished unless the implemented features have actually been tested.
+
+**FINAL PRODUCT STANDARD:**
+
+ExamDNA BD must feel like a premium Bangladeshi EdTech product that students enjoy using and teachers can confidently use for real classroom examinations.
+
+The core differentiator must be:
+
+**"Teachers choose a topic. ExamDNA prepares the exam. Students take it. The platform finds their weaknesses and helps them improve."**
+
+Start by building the actual working application, not by explaining how to build it.

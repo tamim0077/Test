@@ -1,0 +1,119 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Student, Teacher, or Admin persistent user profile",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "name": { "type": "string", "maxLength": 100 },
+        "email": { "type": "string", "maxLength": 150 },
+        "role": { "type": "string", "enum": ["student", "teacher", "admin"] },
+        "institution": { "type": "string", "maxLength": 150 },
+        "subject": { "type": "string", "maxLength": 100 },
+        "track": { "type": "string", "maxLength": 50 },
+        "examLevel": { "type": "string", "maxLength": 50 },
+        "examYear": { "type": "string", "maxLength": 20 },
+        "streakDays": { "type": "number" },
+        "isVerifiedTeacher": { "type": "boolean" },
+        "photoUrl": { "type": "string", "maxLength": 100000 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "name", "email", "role"]
+    },
+    "MistakeEntry": {
+      "title": "MistakeEntry",
+      "description": "Student mistaken question stored for spaced repetition",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "userId": { "type": "string", "maxLength": 128 },
+        "questionId": { "type": "string", "maxLength": 128 },
+        "selectedOptionIndex": { "type": "number" },
+        "correctOptionIndex": { "type": "number" },
+        "attemptCount": { "type": "number" },
+        "intervalStep": { "type": "number" },
+        "nextReviewAt": { "type": "string", "format": "date-time" },
+        "lastAttemptAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "userId", "questionId", "selectedOptionIndex", "correctOptionIndex"]
+    },
+    "ExamResult": {
+      "title": "ExamResult",
+      "description": "Graded exam submission record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "userId": { "type": "string", "maxLength": 128 },
+        "examId": { "type": "string", "maxLength": 128 },
+        "title": { "type": "string", "maxLength": 200 },
+        "score": { "type": "number" },
+        "totalQuestions": { "type": "number" },
+        "accuracyPercentage": { "type": "number" },
+        "timeSpentSeconds": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "userId", "examId", "score", "totalQuestions", "accuracyPercentage"]
+    },
+    "TeacherBatch": {
+      "title": "TeacherBatch",
+      "description": "Teacher batch classroom container",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "code": { "type": "string", "maxLength": 20 },
+        "name": { "type": "string", "maxLength": 150 },
+        "classLevel": { "type": "string", "maxLength": 50 },
+        "subject": { "type": "string", "maxLength": 100 },
+        "academicYear": { "type": "string", "maxLength": 20 },
+        "teacherId": { "type": "string", "maxLength": 128 },
+        "teacherName": { "type": "string", "maxLength": 100 },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "code", "name", "classLevel", "subject", "teacherId"]
+    },
+    "FriendChallenge": {
+      "title": "FriendChallenge",
+      "description": "1v1 competitive friend challenge room",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "code": { "type": "string", "maxLength": 20 },
+        "creatorId": { "type": "string", "maxLength": 128 },
+        "creatorName": { "type": "string", "maxLength": 100 },
+        "creatorScore": { "type": "number" },
+        "challengerId": { "type": "string", "maxLength": 128 },
+        "challengerName": { "type": "string", "maxLength": 100 },
+        "challengerScore": { "type": "number" },
+        "subject": { "type": "string", "maxLength": 100 },
+        "chapter": { "type": "string", "maxLength": 100 },
+        "status": { "type": "string", "enum": ["waiting", "completed"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "code", "creatorId", "subject", "chapter", "status"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "User profile with role, school, and progress"
+    },
+    "/users/{userId}/mistakes/{mistakeId}": {
+      "schema": { "$ref": "#/entities/MistakeEntry" },
+      "description": "Mistakes saved by student for spaced repetition revision"
+    },
+    "/users/{userId}/examResults/{resultId}": {
+      "schema": { "$ref": "#/entities/ExamResult" },
+      "description": "Exam submission scores and statistics"
+    },
+    "/batches/{batchId}": {
+      "schema": { "$ref": "#/entities/TeacherBatch" },
+      "description": "Teacher batches for classroom exam assignment"
+    },
+    "/challenges/{challengeId}": {
+      "schema": { "$ref": "#/entities/FriendChallenge" },
+      "description": "Real-time 1v1 challenges between students"
+    }
+  }
+}

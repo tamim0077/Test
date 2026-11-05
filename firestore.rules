@@ -1,0 +1,182 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global Default Deny Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Global Hardened Security Helpers
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        (request.auth.token.email != null && request.auth.token.email.lower() == 'mustafizurr131@gmail.com') ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    // Validation Blueprint for UserProfile
+    function isValidUser(data) {
+      return data.id is string && data.id.size() > 0 && data.id.size() <= 128 &&
+             data.name is string && data.name.size() > 0 && data.name.size() <= 100 &&
+             data.email is string && data.email.size() > 0 && data.email.size() <= 150 &&
+             data.role is string && (data.role == 'student' || data.role == 'teacher' || data.role == 'admin');
+    }
+
+    // Validation Blueprint for MistakeEntry
+    function isValidMistake(data) {
+      return data.id is string && data.id.size() > 0 && data.id.size() <= 128 &&
+             data.userId is string && data.userId.size() > 0 && data.userId.size() <= 128 &&
+             data.questionId is string && data.questionId.size() > 0 && data.questionId.size() <= 128 &&
+             data.selectedOptionIndex is number &&
+             data.correctOptionIndex is number;
+    }
+
+    // Validation Blueprint for ExamResult
+    function isValidExamResult(data) {
+      return data.id is string && data.id.size() > 0 && data.id.size() <= 128 &&
+             data.userId is string && data.userId.size() > 0 && data.userId.size() <= 128 &&
+             data.examId is string && data.examId.size() > 0 && data.examId.size() <= 128 &&
+             data.score is number &&
+             data.totalQuestions is number &&
+             data.accuracyPercentage is number;
+    }
+
+    // Validation Blueprint for TeacherBatch
+    function isValidBatch(data) {
+      return data.id is string && data.id.size() > 0 && data.id.size() <= 128 &&
+             data.code is string && data.code.size() > 0 && data.code.size() <= 20 &&
+             data.name is string && data.name.size() > 0 && data.name.size() <= 150 &&
+             data.classLevel is string && data.classLevel.size() > 0 && data.classLevel.size() <= 50 &&
+             data.subject is string && data.subject.size() > 0 && data.subject.size() <= 100 &&
+             data.teacherId is string && data.teacherId.size() > 0 && data.teacherId.size() <= 128;
+    }
+
+    // Validation Blueprint for FriendChallenge
+    function isValidChallenge(data) {
+      return data.id is string && data.id.size() > 0 && data.id.size() <= 128 &&
+             data.code is string && data.code.size() > 0 && data.code.size() <= 20 &&
+             data.creatorId is string && data.creatorId.size() > 0 && data.creatorId.size() <= 128 &&
+             data.subject is string && data.subject.size() > 0 && data.subject.size() <= 100 &&
+             data.chapter is string && data.chapter.size() > 0 && data.chapter.size() <= 100 &&
+             data.status is string && (data.status == 'waiting' || data.status == 'completed');
+    }
+
+    // Admins Collection
+    match /admins/{adminId} {
+      allow read: if isAdmin();
+      allow write: if false; // Only configured via server/console
+    }
+
+    // Users Collection (Student and Teacher Profiles)
+    match /users/{userId} {
+      // PII Protection: Only the user themselves or an admin can read user profile
+      allow get: if isOwner(userId) || isAdmin();
+      allow list: if isAdmin();
+
+      // Registration: User can create their own profile, but cannot self-assign admin role or verify self
+      allow create: if isOwner(userId) && isValidId(userId) &&
+                       isValidUser(incoming()) &&
+                       incoming().id == userId &&
+                       incoming().role in ['student', 'teacher'] &&
+                       (incoming().isVerifiedTeacher == false || !('isVerifiedTeacher' in incoming()));
+
+      // Profile Update: Owner can update profile fields, but CANNOT escalate their own role or verified status
+      allow update: if (
+        isAdmin() ||
+        (
+          isOwner(userId) && isValidId(userId) && isValidUser(incoming()) &&
+          incoming().role == existing().role &&
+          incoming().isVerifiedTeacher == existing().isVerifiedTeacher &&
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'name', 'institution', 'subject', 'track', 'examLevel', 'examYear',
+            'streakDays', 'lastActivityDate', 'photoUrl', 'updatedAt'
+          ])
+        )
+      );
+
+      allow delete: if isAdmin();
+
+      // Nested Mistakes Notebook Subcollection
+      match /mistakes/{mistakeId} {
+        allow read: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(mistakeId) &&
+                         isValidMistake(incoming()) &&
+                         incoming().userId == userId;
+        allow update: if isOwner(userId) && isValidId(mistakeId) &&
+                         isValidMistake(incoming()) &&
+                         incoming().userId == userId;
+        allow delete: if isOwner(userId) && isValidId(mistakeId);
+      }
+
+      // Nested Exam Results Subcollection
+      match /examResults/{resultId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow create: if isOwner(userId) && isValidId(resultId) &&
+                         isValidExamResult(incoming()) &&
+                         incoming().userId == userId;
+        allow update: if false; // Exam results are immutable once submitted
+        allow delete: if isAdmin();
+      }
+    }
+
+    // Teacher Batches Collection
+    match /batches/{batchId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && isValidId(batchId) &&
+                       isValidBatch(incoming()) &&
+                       incoming().teacherId == request.auth.uid;
+      allow update: if isSignedIn() && isValidId(batchId) && (
+        isAdmin() ||
+        (existing().teacherId == request.auth.uid && isValidBatch(incoming())) ||
+        // Allow enrolled students to append themselves to enrolledStudents array
+        incoming().diff(existing()).affectedKeys().hasOnly(['enrolledStudents'])
+      );
+      allow delete: if isAdmin() || (isSignedIn() && existing().teacherId == request.auth.uid);
+    }
+
+    // Friends Challenge Collection
+    match /challenges/{challengeId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && isValidId(challengeId) &&
+                       isValidChallenge(incoming()) &&
+                       incoming().creatorId == request.auth.uid;
+      allow update: if isSignedIn() && isValidId(challengeId) && (
+        isAdmin() ||
+        (existing().creatorId == request.auth.uid && isValidChallenge(incoming())) ||
+        // Challenger can update their score, challengerId/name, and finish challenge
+        (
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'challengerId', 'challengerName', 'challengerScore', 'status'
+          ])
+        )
+      );
+      allow delete: if isAdmin() || (isSignedIn() && existing().creatorId == request.auth.uid);
+    }
+
+    // Public test connection document
+    match /test/connection {
+      allow read: if true;
+    }
+  }
+}
