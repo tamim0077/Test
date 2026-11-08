@@ -1,3 +1,4 @@
+import { apiFetch as fetch } from '../utils/api.ts';
 import React, { useState, useEffect } from 'react';
 import { TeacherBatch } from '../types';
 import { Question } from '../utils/examScoring';
@@ -72,6 +73,9 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
   const [copiedLink, setCopiedLink] = useState(false);
 
   // Analytics data
+  const [actionError, setActionError] = useState('');
+  const [targetBatchId, setTargetBatchId] = useState('');
+  const [creatingBatch, setCreatingBatch] = useState(false);
   const [analytics, setAnalytics] = useState<TeacherAnalyticsData | null>(null);
 
   useEffect(() => {
@@ -83,14 +87,14 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
 
   const handleCreateBatchSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await onCreateBatch({
-      name: newBatchName,
-      subject: newBatchSubject,
-      academicYear: newBatchYear,
-      classLevel: 'SSC',
-      teacherName: 'মোঃ রফিকুল ইসলাম',
-    });
-    setShowCreateBatchModal(false);
+    if (creatingBatch) return;
+    setCreatingBatch(true); setActionError('');
+    try {
+      await onCreateBatch({ name: newBatchName, subject: newBatchSubject, academicYear: newBatchYear, classLevel: 'SSC' });
+      setShowCreateBatchModal(false);
+    } catch (error: any) { setActionError(error.message); }
+    finally { setCreatingBatch(false); }
+
   };
 
   const handleStartGeneration = async () => {
@@ -107,8 +111,8 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
       });
       setReviewQuestions(res.draftQuestions);
       setBlueprintInfo(res.blueprint);
-    } catch (e) {
-      console.error(e);
+    } catch (e: any) {
+      setActionError(e.message || 'কাজটি সম্পন্ন হয়নি। আবার চেষ্টা করুন।');
     } finally {
       setIsGenerating(false);
     }
@@ -118,10 +122,10 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
     if (reviewQuestions.length === 0) return;
     setIsPublishing(true);
     try {
-      const targetBatchId = batches.length > 0 ? batches[0].id : undefined;
+      setActionError('');
       const res = await onPublishExam({
         title: `${genChapter}: ${genTopic} (${genPattern === 'board_style' ? 'বোর্ড স্ট্যান্ডার্ড' : 'মাস্টারি'})`,
-        batchId: targetBatchId,
+        batchId: targetBatchId || undefined,
         subject: genSubject,
         chapter: genChapter,
         topics: [genTopic],
@@ -130,8 +134,8 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
         patternType: genPattern,
       });
       setPublishedExamResult(res);
-    } catch (e) {
-      console.error(e);
+    } catch (e: any) {
+      setActionError(e.message || 'কাজটি সম্পন্ন হয়নি। আবার চেষ্টা করুন।');
     } finally {
       setIsPublishing(false);
     }
@@ -176,6 +180,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
+      {actionError && <p role="alert" className="p-4 bg-red-50 text-red-800">{actionError}</p>}
       {/* Teacher Workspace Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
         <div>
@@ -298,7 +303,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                   <button
                     onClick={() => {
                       setActiveTab('generator');
-                      setGenSubject(batch.subject);
+                      setGenSubject(batch.subject); setTargetBatchId(batch.id);
                     }}
                     className="w-full py-2.5 text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors"
                   >
@@ -526,6 +531,12 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                 </button>
               </div>
 
+              <label className="block">যে ব্যাচে প্রকাশ করবেন
+                <select aria-label="Assignment batch" value={targetBatchId} onChange={e => setTargetBatchId(e.target.value)} className="ml-3 p-2 border rounded">
+                  <option value="">লিংকধারী সকল লগইন করা শিক্ষার্থী</option>
+                  {batches.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+                </select>
+              </label>
               {/* Question Cards */}
               <div className="space-y-4">
                 {reviewQuestions.map((q, idx) => (
@@ -764,3 +775,4 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
     </div>
   );
 };
+

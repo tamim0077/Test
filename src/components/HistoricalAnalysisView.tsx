@@ -1,3 +1,4 @@
+import { apiFetch as fetch } from '../utils/api.ts';
 import React, { useState, useEffect } from 'react';
 import {
   ShieldAlert,
@@ -45,7 +46,8 @@ export const HistoricalAnalysisView: React.FC<HistoricalAnalysisViewProps> = ({
   const [importBoard, setImportBoard] = useState('ঢাকা');
   const [importSubject, setImportSubject] = useState('সাধারণ গণিত');
   const [importChapter, setImportChapter] = useState('বীজগাণিতিক রাশি');
-  const [sampleQuestionsText, setSampleQuestionsText] = useState(`প্রশ্ন ১: a + b = 5 এবং ab = 6 হলে a² + b² = কত? | অপশন: 13, 15, 25, 37 | উত্তর: 13 | ব্যাখ্যা: 5² - 2(6) = 25 - 12 = 13`);
+  const [sampleQuestionsText, setSampleQuestionsText] = useState('[]');
+  const [importError, setImportError] = useState('');
   const [isImporting, setIsImporting] = useState(false);
 
   useEffect(() => {
@@ -60,14 +62,9 @@ export const HistoricalAnalysisView: React.FC<HistoricalAnalysisViewProps> = ({
     e.preventDefault();
     setIsImporting(true);
     try {
-      // Mock structured parsing from text for admin preview
-      const parsedQuestion = {
-        questionText: 'ঢাকা বোর্ড ২০২৪: a + b = 5 এবং ab = 6 হলে a² + b² এর মান কত?',
-        options: ['13', '15', '25', '37'] as [string, string, string, string],
-        correctAnswerIndex: 0,
-        explanation: 'a² + b² = (a+b)² - 2ab = 5² - 2(6) = 25 - 12 = 13।',
-        topic: 'বর্গের সূত্রাবলী ও অনুসিদ্ধান্ত',
-      };
+      setImportError('');
+      const questions = JSON.parse(sampleQuestionsText);
+      if (!Array.isArray(questions) || !questions.length) throw new Error('পূর্ণ প্রশ্নের JSON array দিন।');
 
       const res = await fetch('/api/admin/import-questions', {
         method: 'POST',
@@ -77,20 +74,20 @@ export const HistoricalAnalysisView: React.FC<HistoricalAnalysisViewProps> = ({
           board: importBoard,
           subject: importSubject,
           chapter: importChapter,
-          questions: [parsedQuestion],
+          questions,
         }),
       });
 
       if (res.ok) {
-        alert('বোর্ড প্রশ্নপত্র সফলভাবে ইনডেক্স ও যাচাই করা হয়েছে!');
+        alert('প্রশ্নগুলো সংরক্ষিত হয়েছে। Admin dashboard থেকে যাচাই ও অনুমোদন করুন।');
         setShowImportForm(false);
         // Refresh
         const refreshRes = await fetch('/api/historical-analysis');
         const refreshedData = await refreshRes.json();
         setData(refreshedData);
       }
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      setImportError(err.message);
     } finally {
       setIsImporting(false);
     }
@@ -264,8 +261,9 @@ export const HistoricalAnalysisView: React.FC<HistoricalAnalysisViewProps> = ({
 
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1">
-                প্রশ্নের নমুনা টেক্সট (অ্যাডমিন প্রিভিউ)
+                প্রশ্নের JSON array (options, correctAnswerIndex 0–3, explanation, topic, difficulty সহ)
               </label>
+              {importError && <p role="alert" className="text-red-700">{importError}</p>}
               <textarea
                 rows={3}
                 value={sampleQuestionsText}
@@ -275,7 +273,7 @@ export const HistoricalAnalysisView: React.FC<HistoricalAnalysisViewProps> = ({
             </div>
 
             <div className="p-3 bg-blue-50 rounded-xl text-[11px] text-blue-900">
-              *প্রশ্ন সংরক্ষণ করার পর তা সরাসরি প্রশ্নব্যাংক ও বোর্ড প্যাটার্ন এআই ইঞ্জিনে যুক্ত হবে।
+              *সংরক্ষিত প্রশ্নগুলো যাচাইয়ের অপেক্ষায় থাকবে। Admin approval-এর পরে পরীক্ষায় ব্যবহার হবে।
             </div>
 
             <div className="flex justify-end gap-3 pt-2">
@@ -300,3 +298,4 @@ export const HistoricalAnalysisView: React.FC<HistoricalAnalysisViewProps> = ({
     </div>
   );
 };
+

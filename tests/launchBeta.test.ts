@@ -6,7 +6,7 @@ import { normalizeChapterName, matchesChapter } from '../src/utils/chapterUtils.
 import { INITIAL_QUESTION_BANK } from '../src/data/questionBank.ts';
 import { CHEMISTRY_QUESTION_BANK, BIOLOGY_QUESTION_BANK } from '../src/data/scienceQuestionBank.ts';
 import { BRAND_CONFIG, NCTB_CHAPTERS } from '../src/config/brandConfig.ts';
-import { ALL_SSC_BOARDS, ALL_SSC_YEARS, ALL_SSC_SUBJECTS } from '../server.ts';
+import { ALL_SSC_BOARDS, ALL_SSC_YEARS, ALL_SSC_SUBJECTS } from '../server/api.ts';
 
 // Sample mock questions
 const mockQuestions: Question[] = [
@@ -169,3 +169,4 @@ test('BrandConfig: Free plan has 20 daily questions and Beta trial provides 200 
   assert.ok(BRAND_CONFIG.payments.statusNoticeBn.includes('পাবলিক বেটা'));
   assert.equal(Object.keys(NCTB_CHAPTERS).length, 4);
 });
+

@@ -11,6 +11,8 @@ export interface Question {
   nctbReference?: string;
   verificationStatus: 'verified' | 'needs_review' | 'demo';
   source?: string;
+  board?: string | null;
+  year?: number | null;
 }
 
 export interface ExamSubmissionPayload {
@@ -180,3 +182,4 @@ export function gradeExamSubmission(
     submittedAt: new Date().toISOString(),
   };
 }
+

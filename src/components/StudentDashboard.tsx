@@ -37,6 +37,8 @@ interface StudentDashboardProps {
   profile: StudentProfile;
   currentUser?: any;
   mistakes: UserMistakeEntry[];
+  examHistory: any[];
+  onReviewResult: (result: any) => void;
   totalExamsCount: number;
   averageAccuracy: number;
   onStartDiagnostic: () => void;
@@ -53,6 +55,8 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
   profile,
   currentUser,
   mistakes = [],
+  examHistory = [],
+  onReviewResult,
   totalExamsCount = 0,
   averageAccuracy = 0,
   onStartDiagnostic,
@@ -419,7 +423,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
         {/* 2-Column Main Section matching Screen 5 */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-7 items-start">
           
-          {/* Left Column (7 Cols): Continue Practice + Upcoming Challenges + Badges */}
+          {/* Left Column (7 Cols): Continue Practice + চ্যালেঞ্জের উদাহরণ + Badges */}
           <div className="lg:col-span-7 space-y-6">
             
             {/* Continue Practice Section (4 Official Subjects) */}
@@ -584,7 +588,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
                   </div>
                   <div>
                     <div className="text-xs font-bold text-[#0F172A]">Daily Quiz Challenge</div>
-                    <div className="text-[11px] text-slate-500">Earn 50 XP & maintain your 24-day streak</div>
+                    <div className="text-[11px] text-slate-500">Earn 50 XP & build your study streak</div>
                   </div>
                 </div>
 
@@ -600,7 +604,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
 
             {/* Badges Row matching Screen 5 */}
             <div className="bg-white p-5 rounded-2xl border border-blue-100/90 shadow-2xs">
-              <h3 className="text-sm font-black text-[#0F172A] mb-3">Earned Badges</h3>
+              <h3 className="text-sm font-black text-[#0F172A] mb-3">ব্যাজের উদাহরণ</h3>
               <div className="grid grid-cols-4 gap-2.5 text-center">
                 <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/80">
                   <div className="w-9 h-9 mx-auto rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mb-1.5">
@@ -637,7 +641,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
           {/* Right Column (5 Cols): Circular Progress Gauge & Join Batch */}
           <div className="lg:col-span-5 space-y-6">
             
-            {/* Your Progress Circular Gauge Card matching Screen 5 */}
+            {/* প্রস্তুতির উদাহরণ (ব্যক্তিগত ফলাফল নয়) Circular Gauge Card matching Screen 5 */}
             <div className="bg-white p-6 rounded-3xl border border-blue-100/90 shadow-xl shadow-blue-500/5 text-center">
               <h3 className="text-base font-black text-[#0F172A] mb-4 text-left">Your Progress</h3>
 
@@ -721,7 +725,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
             <div className="bg-white p-6 rounded-3xl border border-blue-100 shadow-2xs">
               <h3 className="text-sm font-black text-[#0F172A] mb-1">Join Teacher's Batch</h3>
               <p className="text-xs text-slate-500 mb-4">
-                Enter your teacher's 6-character batch code to participate in scheduled class exams.
+                Enter your teacher's batch code to participate in scheduled class exams.
               </p>
 
               <form onSubmit={handleJoin} className="space-y-3">
@@ -780,52 +784,8 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
 
             {/* List of Previous Exams */}
             <div className="space-y-3">
-              {[
-                {
-                  id: 'ex-01',
-                  title: 'অধ্যায় ৩: বীজগাণিতিক রাশি - পূর্ণাঙ্গ মডেল টেস্ট',
-                  subject: 'সাধারণ গণিত',
-                  chapter: 'বীজগাণিতিক রাশি',
-                  score: 18,
-                  total: 20,
-                  accuracy: 90,
-                  date: 'আজ দুপুর ১২:৩০',
-                  timeSpent: '14 মিনিট',
-                },
-                {
-                  id: 'ex-02',
-                  title: 'অধ্যায় ২: গতি (Motion) - বোর্ড প্রশ্ন অনুশীলন',
-                  subject: 'পদার্থবিজ্ঞান',
-                  chapter: 'গতি (Motion)',
-                  score: 16,
-                  total: 20,
-                  accuracy: 80,
-                  date: 'গতকাল সন্ধ্যা ০৭:১৫',
-                  timeSpent: '16 মিনিট',
-                },
-                {
-                  id: 'ex-03',
-                  title: 'অধ্যায় ২: সেট ও ফাংশন - ডায়াগনস্টিক টেস্ট',
-                  subject: 'সাধারণ গণিত',
-                  chapter: 'সেট ও ফাংশন',
-                  score: 14,
-                  total: 20,
-                  accuracy: 70,
-                  date: '৩ দিন আগে',
-                  timeSpent: '18 মিনিট',
-                },
-                {
-                  id: 'ex-04',
-                  title: 'অধ্যায় ৩: বল (Force) - এআই কনসেপ্ট টেস্ট',
-                  subject: 'পদার্থবিজ্ঞান',
-                  chapter: 'বল (Force)',
-                  score: 15,
-                  total: 20,
-                  accuracy: 75,
-                  date: '৫ দিন আগে',
-                  timeSpent: '15 মিনিট',
-                },
-              ].map((ex) => (
+              {examHistory.length === 0 && <p className="p-5 text-slate-500">এখনও সংরক্ষিত পরীক্ষা নেই। Demo ফলাফল ব্যক্তিগত history-তে যোগ হয় না।</p>}
+              {examHistory.map(r => ({ ...r, id: r.id || r.examId, title: r.title || 'MCQ পরীক্ষা', subject: r.questionsReview?.[0]?.subject || '', accuracy: r.accuracyPercentage, total: r.totalQuestions, date: new Date(r.submittedAt).toLocaleString('bn-BD', {timeZone:'Asia/Dhaka'}), timeSpent: Math.round(r.timeSpentSeconds / 60) + ' মিনিট', original: r })).map((ex) => (
                 <div
                   key={ex.id}
                   className="bg-white p-5 rounded-2xl border border-blue-100 shadow-2xs hover:shadow-md transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4"
@@ -851,7 +811,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
                   <div className="flex items-center gap-2 shrink-0">
                     <button
                       type="button"
-                      onClick={onOpenMistakes}
+                      onClick={() => onReviewResult(ex.original)}
                       className="px-3.5 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-bold border border-slate-200 transition-colors cursor-pointer"
                     >
                       ভুলসমূহ রিভিউ করো
@@ -873,131 +833,14 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
           </div>
         )}
 
-        {/* TAB 3: SUBJECT PROGRESS & MASTERY */}
-        {activeTab === 'progress' && (
-          <div className="space-y-6 animate-in fade-in duration-200">
-            <div>
-              <h2 className="text-xl font-black text-[#0F172A]">বিষয়ভিত্তিক অগ্রগতি ও নির্ভুলতা (My Progress)</h2>
-              <p className="text-xs text-slate-500 mt-0.5">সাধারণ গণিত ও পদার্থবিজ্ঞানের প্রতিটি অধ্যায়ের সার্বিক প্রস্তুতি বিশ্লেষণ</p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Mathematics Card */}
-              <div className="bg-white p-6 rounded-3xl border border-blue-100 shadow-sm space-y-4">
-                <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
-                      <Calculator className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-slate-900 text-sm">সাধারণ গণিত (General Mathematics)</h3>
-                      <div className="text-[11px] text-slate-400">১৭টি অধ্যায় · সার্বিক প্রস্তুতি ৮৫%</div>
-                    </div>
-                  </div>
-                  <span className="text-xs font-black text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full">৮৫%</span>
-                </div>
-
-                <div className="space-y-3">
-                  {[
-                    { ch: 'অধ্যায় ৩: বীজগাণিতিক রাশি', pct: 92 },
-                    { ch: 'অধ্যায় ২: সেট ও ফাংশন', pct: 88 },
-                    { ch: 'অধ্যায় ১: বাস্তব সংখ্যা', pct: 95 },
-                    { ch: 'অধ্যায় ৪: সূচক ও লগারিদম', pct: 78 },
-                    { ch: 'অধ্যায় ৯: ত্রিকোণমিতিক অনুপাত', pct: 74 },
-                    { ch: 'অধ্যায় ১৭: পরিসংখ্যান', pct: 90 },
-                  ].map((item, idx) => (
-                    <div key={idx} className="space-y-1">
-                      <div className="flex justify-between text-xs font-semibold text-slate-700">
-                        <span>{item.ch}</span>
-                        <span className="text-blue-600 font-bold">{item.pct}%</span>
-                      </div>
-                      <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-blue-600 rounded-full"
-                          style={{ width: `${item.pct}%` }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Physics Card */}
-              <div className="bg-white p-6 rounded-3xl border border-cyan-100 shadow-sm space-y-4">
-                <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-9 h-9 rounded-xl bg-cyan-50 text-cyan-600 flex items-center justify-center font-bold">
-                      <Atom className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-slate-900 text-sm">পদার্থবিজ্ঞান (Physics)</h3>
-                      <div className="text-[11px] text-slate-400">১৪টি অধ্যায় · সার্বিক প্রস্তুতি ৭৮%</div>
-                    </div>
-                  </div>
-                  <span className="text-xs font-black text-cyan-600 bg-cyan-50 px-2.5 py-1 rounded-full">৭৮%</span>
-                </div>
-
-                <div className="space-y-3">
-                  {[
-                    { ch: 'অধ্যায় ২: গতি (Motion)', pct: 84 },
-                    { ch: 'অধ্যায় ৩: বল (Force)', pct: 76 },
-                    { ch: 'অধ্যায় ১: ভৌত রাশি ও পরিমাপ', pct: 90 },
-                    { ch: 'অধ্যায় ৪: কাজ, ক্ষমতা ও শক্তি', pct: 72 },
-                    { ch: 'অধ্যায় ৫: পদার্থের অবস্থা ও চাপ', pct: 68 },
-                  ].map((item, idx) => (
-                    <div key={idx} className="space-y-1">
-                      <div className="flex justify-between text-xs font-semibold text-slate-700">
-                        <span>{item.ch}</span>
-                        <span className="text-cyan-600 font-bold">{item.pct}%</span>
-                      </div>
-                      <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-gradient-to-r from-cyan-500 to-blue-600 rounded-full"
-                          style={{ width: `${item.pct}%` }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* TAB 4: ACHIEVEMENTS */}
-        {activeTab === 'achievements' && (
-          <div className="space-y-6 animate-in fade-in duration-200">
-            <div>
-              <h2 className="text-xl font-black text-[#0F172A]">অর্জিত ব্যাজ ও মেডেল (Achievements)</h2>
-              <p className="text-xs text-slate-500 mt-0.5">ধারাবাহিক অনুশীলন ও ফ্রেন্ডস চ্যালেঞ্জ জয়ের স্বীকৃতি</p>
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              {[
-                { name: 'First Exam', desc: 'প্রথম মডেল টেস্ট সম্পন্ন', icon: Award, color: 'text-blue-600 bg-blue-100' },
-                { name: '5 Day Streak', desc: 'টানা ৫ দিন অনুশীলন', icon: Flame, color: 'text-amber-600 bg-amber-100' },
-                { name: 'Top Performer', desc: '৯০%+ নম্বর অর্জন', icon: Star, color: 'text-emerald-600 bg-emerald-100' },
-                { name: 'Challenge Master', desc: '৫টি ফ্রেন্ডস ব্যাটল জয়', icon: Trophy, color: 'text-purple-600 bg-purple-100' },
-                { name: 'Math Prodigy', desc: 'বীজগাণিতিক রাশিতে ১০০%', icon: Calculator, color: 'text-indigo-600 bg-indigo-100' },
-                { name: 'Physics Ace', desc: 'গতি ও বল অধ্যায়ে পারদর্শী', icon: Atom, color: 'text-cyan-600 bg-cyan-100' },
-                { name: 'Night Owl', desc: 'গভীর রাতে সফল প্রস্তুতি', icon: Sparkles, color: 'text-violet-600 bg-violet-100' },
-                { name: 'Mastermind', desc: '১০০+ প্রশ্ন নির্ভুল সমাধান', icon: BrainCircuit, color: 'text-rose-600 bg-rose-100' },
-              ].map((badge, idx) => {
-                const IconComponent = badge.icon;
-                return (
-                  <div key={idx} className="bg-white p-5 rounded-2xl border border-blue-100/90 shadow-2xs text-center space-y-2 hover:shadow-md transition-shadow">
-                    <div className={`w-12 h-12 mx-auto rounded-2xl ${badge.color} flex items-center justify-center shadow-xs`}>
-                      <IconComponent className="w-6 h-6" />
-                    </div>
-                    <div className="font-extrabold text-sm text-[#0F172A]">{badge.name}</div>
-                    <div className="text-[11px] text-slate-400">{badge.desc}</div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
+        {activeTab === 'progress' && <section className="p-6 bg-white rounded-xl"><h2>বিষয়ভিত্তিক ফলাফল</h2>{[...new Set(examHistory.flatMap(r => (r.questionsReview || []).map((q: any) => q.subject)))].map(subject => {
+          const questions = examHistory.flatMap(r => r.questionsReview || []).filter(q => q.subject === subject);
+          const correct = questions.filter(q => q.status === 'correct').length;
+          return <p key={String(subject)} className="py-3">{String(subject)}: {correct}/{questions.length} ({Math.round(correct/questions.length*100)}%)</p>;
+        })}{!examHistory.length && <p>পরীক্ষা সম্পন্ন হলে অগ্রগতি দেখাবে।</p>}</section>}
+        {activeTab === 'achievements' && <section className="p-6 bg-white rounded-xl"><h2>অর্জন</h2><p>{examHistory.length ? 'প্রথম পরীক্ষা সম্পন্ন ✓' : 'প্রথম পরীক্ষা এখনও সম্পন্ন হয়নি'}</p><p>{activeStreak >= 5 ? '৫ দিনের ধারাবাহিকতা ✓' : '৫ দিনের ধারাবাহিকতা এখনও অর্জিত হয়নি'}</p></section>}
       </div>
     </div>
   );
 };
+

@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import { apiFetch as fetch } from '../utils/api.ts';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Check,
   ChevronRight,
@@ -33,6 +34,7 @@ interface ExamSetupPageProps {
     difficulty: string;
     duration: number;
     allowPartial?: boolean;
+    board?: string; year?: string;
   }) => Promise<{ success: boolean; error?: string; availableCount?: number; requestedCount?: number; message?: string } | void> | void;
   onBack: () => void;
 }
@@ -42,6 +44,8 @@ export const ExamSetupPage: React.FC<ExamSetupPageProps> = ({
   onStartExam,
   onBack,
 }) => {
+  const [startError, setStartError] = useState('');
+  const startBusy = useRef(false);
   const [setupMode, setSetupMode] = useState<'quick' | 'wizard'>('quick');
   const [isSubmittingQuick, setIsSubmittingQuick] = useState<boolean>(false);
   const [currentStep, setCurrentStep] = useState<number>(1);
@@ -51,6 +55,8 @@ export const ExamSetupPage: React.FC<ExamSetupPageProps> = ({
   const [subject, setSubject] = useState<string>('সাধারণ গণিত');
   const [selectedChapters, setSelectedChapters] = useState<string[]>([]);
   const [questionSource, setQuestionSource] = useState<string>('all');
+  const [board, setBoard] = useState('');
+  const [year, setYear] = useState('');
   const [count, setCount] = useState<number>(20);
   const [difficulty, setDifficulty] = useState<string>('adaptive');
   const [duration, setDuration] = useState<number>(20);
@@ -98,91 +104,43 @@ export const ExamSetupPage: React.FC<ExamSetupPageProps> = ({
     );
   };
 
-  // Real-time Availability Query
+  // Discard stale availability responses when filters change.
   useEffect(() => {
-    if (currentStep === 5 || currentStep === 8) {
-      fetch('/api/exams/check-availability', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          subject,
-          chapters: selectedChapters,
-          questionSource,
-          difficulty,
-          count,
-        }),
-      })
-        .then((r) => r.json())
-        .then((data) => setAvailability(data))
-        .catch((err) => console.error('Availability check failed', err));
-    }
-  }, [currentStep, subject, selectedChapters, questionSource, difficulty, count]);
+    if (currentStep !== 5 && currentStep !== 8) return;
+    let active = true;
+    setAvailability(null);
+    fetch('/api/exams/check-availability', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ subject, chapters: selectedChapters, questionSource, board, year, difficulty, count }),
+    }).then(r => r.json()).then(data => { if (active) setAvailability(data); })
+      .catch(error => { if (active) setStartError(error.message); });
+    return () => { active = false; };
+  }, [currentStep, subject, selectedChapters, questionSource, board, year, difficulty, count]);
 
-  const handleNext = async () => {
-    if (currentStep < 8) {
-      setCurrentStep((prev) => prev + 1);
-    } else {
-      setIsCheckingAvailability(true);
-      try {
-        const res = await fetch('/api/exams/check-availability', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            subject,
-            chapters: selectedChapters,
-            questionSource,
-            difficulty,
-            count,
-          }),
-        });
-        const data = await res.json();
-        if (data && !data.isSufficient) {
-          setAvailability(data);
+  const startExam = async (allowPartial = false) => {
+    if (startBusy.current) return;
+    startBusy.current = true; setIsCheckingAvailability(true); setIsSubmittingQuick(true); setStartError('');
+    try {
+      const result = await onStartExam({ level, subject, chapters: selectedChapters,
+        questionSource, board, year, count, difficulty, duration, allowPartial });
+      if (result && !result.success) {
+        if (result.error === 'insufficient_questions') {
+          setAvailability({ availableCount: result.availableCount || 0,
+            requestedCount: result.requestedCount || count, isSufficient: false, message: result.message || '' });
           setIsInsufficientModalOpen(true);
-          setIsCheckingAvailability(false);
-          return;
-        }
-      } catch (err) {
-        console.error('Pre-flight check error:', err);
+        } else setStartError(result.message || 'পরীক্ষা শুরু করা যায়নি। আবার চেষ্টা করুন।');
       }
-      setIsCheckingAvailability(false);
-
-      const result = await onStartExam({
-        level,
-        subject,
-        chapters: selectedChapters,
-        questionSource,
-        count,
-        difficulty,
-        duration,
-        allowPartial: false,
-      });
-
-      if (result && !result.success && result.error === 'insufficient_questions') {
-        setAvailability({
-          availableCount: result.availableCount || 0,
-          requestedCount: result.requestedCount || count,
-          isSufficient: false,
-          message: result.message || `আপনার নির্বাচিত বিষয়ের জন্য বর্তমানে ${result.availableCount}টি প্রশ্ন পাওয়া যাচ্ছে।`,
-        });
-        setIsInsufficientModalOpen(true);
-      }
-    }
+    } catch (error: any) { setStartError(error.message || 'পরীক্ষা শুরু করা যায়নি।'); }
+    finally { startBusy.current = false; setIsCheckingAvailability(false); setIsSubmittingQuick(false); }
   };
-
+  const handleNext = () => {
+    if (currentStep < 8) setCurrentStep(step => step + 1);
+    else void startExam();
+  };
   const handleStartPartial = () => {
-    const availCount = availability?.availableCount || 10;
+    if (!availability?.availableCount) return;
     setIsInsufficientModalOpen(false);
-    onStartExam({
-      level,
-      subject,
-      chapters: selectedChapters,
-      questionSource,
-      count: availCount,
-      difficulty,
-      duration,
-      allowPartial: true,
-    });
+    void startExam(true);
   };
 
   const handleChangeChapters = () => {
@@ -205,6 +163,8 @@ export const ExamSetupPage: React.FC<ExamSetupPageProps> = ({
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
+      {startError && <p role="alert" className="p-4 text-red-800 bg-red-50">{startError}</p>}
+      <div className="flex flex-wrap gap-3 p-4 bg-blue-50 rounded-xl"><label>বোর্ড <select aria-label="Board" value={board} onChange={e => setBoard(e.target.value)} className="p-2 border rounded"><option value="">সকল বোর্ড</option>{['ঢাকা','রাজশাহী','চট্টগ্রাম','কুমিল্লা','যশোর','বরিশাল','সিলেট','দিনাজপুর','ময়মনসিংহ'].map(b => <option key={b}>{b}</option>)}</select></label><label>বছর <select aria-label="Year" value={year} onChange={e => setYear(e.target.value)} className="p-2 border rounded"><option value="">সকল বছর</option>{[2025,2024,2023,2022,2021,2020].map(y => <option key={y}>{y}</option>)}</select></label><p className="text-xs">শুধু নথিভুক্ত বোর্ড/বছরযুক্ত প্রশ্ন ফিল্টারে অন্তর্ভুক্ত হবে।</p></div>
       <div className="max-w-6xl mx-auto">
         
         {/* Top Breadcrumb & Exit */}
@@ -361,7 +321,7 @@ export const ExamSetupPage: React.FC<ExamSetupPageProps> = ({
                   ৩. প্রশ্নসংখ্যা (Exact Question Count)
                 </label>
                 <div className="grid grid-cols-4 gap-2">
-                  {[10, 20, 30, 50].map((num) => (
+                  {[10, 20, 30, 35, 50, 100].map((num) => (
                     <button
                       key={num}
                       type="button"
@@ -412,23 +372,7 @@ export const ExamSetupPage: React.FC<ExamSetupPageProps> = ({
               <button
                 type="button"
                 disabled={isSubmittingQuick}
-                onClick={async () => {
-                  setIsSubmittingQuick(true);
-                  try {
-                    await onStartExam({
-                      level: 'SSC',
-                      subject,
-                      chapters: selectedChapters.length > 0 ? selectedChapters : availableChapters,
-                      questionSource: 'all',
-                      count,
-                      difficulty: 'adaptive',
-                      duration,
-                      allowPartial: false,
-                    });
-                  } finally {
-                    setIsSubmittingQuick(false);
-                  }
-                }}
+                onClick={() => void startExam()}
                 className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-black text-sm shadow-lg shadow-blue-500/25 transition-all flex items-center justify-center gap-2.5 cursor-pointer disabled:opacity-50"
               >
                 <Zap className="w-4 h-4 fill-white" />
@@ -1123,6 +1067,7 @@ export const ExamSetupPage: React.FC<ExamSetupPageProps> = ({
 
               <button
                 type="button"
+                disabled={isCheckingAvailability}
                 onClick={handleNext}
                 className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-bold shadow-md shadow-blue-500/25 transition-all flex items-center gap-1.5 cursor-pointer"
               >
@@ -1177,6 +1122,7 @@ export const ExamSetupPage: React.FC<ExamSetupPageProps> = ({
             <div className="space-y-2.5 pt-1">
               <button
                 type="button"
+                disabled={!availability.availableCount || isCheckingAvailability}
                 onClick={handleStartPartial}
                 className="w-full py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition-colors flex items-center justify-between shadow-xs cursor-pointer"
               >
@@ -1208,3 +1154,4 @@ export const ExamSetupPage: React.FC<ExamSetupPageProps> = ({
     </div>
   );
 };
+

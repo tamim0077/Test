@@ -1,3 +1,4 @@
+import { apiFetch as fetch } from '../utils/api.ts';
 import React, { useState, useEffect, useRef } from 'react';
 import { UserMistakeEntry } from '../types';
 import {
@@ -537,3 +538,4 @@ export const AiStudyCoachModal: React.FC<AiStudyCoachModalProps> = ({
     </div>
   );
 };
+

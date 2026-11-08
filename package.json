@@ -4,13 +4,14 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "tsx server.ts",
+    "dev": "node --import tsx server.ts",
     "build": "vite build",
     "start": "node server.ts",
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
     "lint": "tsc --noEmit",
-    "test": "IS_TEST=true tsx --test tests/*.test.ts"
+    "test": "node --import tsx --test tests/*.test.ts tests/*.test.tsx src/utils/rules.test.ts",
+    "test:firebase": "firebase emulators:exec --only firestore --project demo-examdna-audit \"node --import tsx --test tests/firestore.integration.ts\""
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
@@ -19,10 +20,12 @@
     "dotenv": "^17.2.3",
     "express": "^4.21.2",
     "firebase": "^13.2.0",
+    "firebase-admin": "^14.5.0",
     "lucide-react": "^0.546.0",
     "motion": "^12.23.24",
     "react": "^19.0.1",
     "react-dom": "^19.0.1",
+    "react-test-renderer": "^19.3.1",
     "vite": "^8.3.0"
   },
   "devDependencies": {

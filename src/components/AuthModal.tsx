@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import { setPersistence, browserLocalPersistence, browserSessionPersistence } from 'firebase/auth';
+import { apiFetch as fetch } from '../utils/api.ts';
+import React, { useState, useEffect } from 'react';
 import {
   X,
   GraduationCap,
@@ -41,10 +43,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   onAuthSuccess,
   defaultRole = 'student',
 }) => {
-  if (!isOpen) return null;
 
   const t = translations[lang];
   const [role, setRole] = useState<'student' | 'teacher'>(defaultRole);
+  useEffect(() => { if (isOpen) setRole(defaultRole); }, [isOpen, defaultRole]);
   const [isSignUp, setIsSignUp] = useState(false);
 
   // Form fields
@@ -64,17 +66,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     setLoading(true);
 
     const normalizedEmail = email.trim().toLowerCase();
-    const isAdminEmail = normalizedEmail === 'mustafizurr131@gmail.com';
-
-    // Strictly enforce no self-assigned admin privileges through public signup
-    if (isSignUp && isAdminEmail) {
-      setErrorMsg(lang === 'bn' ? 'অ্যাডমিন একাউন্ট উন্মুক্তভাবে নিবন্ধন করা অনুমোদিত নয়।' : 'Admin accounts cannot be registered via public signup.');
-      setLoading(false);
-      return;
-    }
-
     // 1. Try Firebase Authentication (Cloud Firestore backed)
     try {
+      await setPersistence(auth, rememberMe ? browserLocalPersistence : browserSessionPersistence);
       if (isSignUp) {
         const cred = await createUserWithEmailAndPassword(auth, normalizedEmail, password);
         const fbUser = cred.user;
@@ -82,19 +76,18 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           id: fbUser.uid,
           name: name.trim(),
           email: normalizedEmail,
-          role: isAdminEmail ? 'admin' : role,
+          role,
           institution: institution?.trim() || undefined,
           subject: subject?.trim() || undefined,
           track: 'science',
           examLevel: 'SSC',
           examYear: '2027',
-          streakDays: 1,
-          isVerifiedTeacher: isAdminEmail,
+          streakDays: 0,
+          isVerifiedTeacher: false,
         };
 
         await saveFirestoreUserProfile(profile);
         const token = await fbUser.getIdToken();
-        localStorage.setItem('examdna_token', token);
         onAuthSuccess(profile, token);
         onClose();
         return;
@@ -102,62 +95,26 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         const cred = await signInWithEmailAndPassword(auth, normalizedEmail, password);
         const fbUser = cred.user;
         let profile = await getFirestoreUserProfile(fbUser.uid);
-        if (!profile) {
+        if (!profile || !(profile as any).createdAt) {
           profile = {
             id: fbUser.uid,
             name: fbUser.displayName || name || normalizedEmail.split('@')[0],
             email: normalizedEmail,
-            role: isAdminEmail ? 'admin' : role,
-            streakDays: 1,
-            isVerifiedTeacher: isAdminEmail,
+            role,
+            streakDays: 0,
+            isVerifiedTeacher: false,
           };
           await saveFirestoreUserProfile(profile);
         }
 
         const token = await fbUser.getIdToken();
-        localStorage.setItem('examdna_token', token);
         onAuthSuccess(profile, token);
         onClose();
         return;
       }
-    } catch (fbErr: any) {
-      console.warn('Firebase Auth notice, attempting server fallback:', fbErr?.code || fbErr?.message);
-      
-      // Fallback to Express backend for seeded demo accounts (student123, teacher123, admin2027!)
-      const endpoint = isSignUp ? '/api/auth/register' : '/api/auth/login';
-      const payload = isSignUp
-        ? { name, email: normalizedEmail, password, role, institution, subject, track: 'science', examLevel: 'SSC', examYear: '2027' }
-        : { email: normalizedEmail, password };
-
-      try {
-        const res = await fetch(endpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        });
-
-        const data = await res.json();
-        if (!res.ok) {
-          throw new Error(data.error || fbErr?.message || (lang === 'bn' ? 'অনুরোধ ব্যর্থ হয়েছে।' : 'Request failed.'));
-        }
-
-        localStorage.setItem('examdna_token', data.token);
-        onAuthSuccess(data.user, data.token);
-        onClose();
-      } catch (err: any) {
-        let msg = err.message || 'Authentication error';
-        if (fbErr?.code === 'auth/email-already-in-use') {
-          msg = lang === 'bn' ? 'এই ইমেইল দিয়ে ইতিমধ্যে একাউন্ট খোলা হয়েছে।' : 'This email is already registered. Please log in.';
-        } else if (fbErr?.code === 'auth/wrong-password' || fbErr?.code === 'auth/invalid-credential') {
-          msg = lang === 'bn' ? 'ভুল ইমেইল অথবা পাসওয়ার্ড।' : 'Incorrect email or password.';
-        } else if (fbErr?.code === 'auth/weak-password') {
-          msg = lang === 'bn' ? 'পাসওয়ার্ড অন্তত ৬ অক্ষরের হতে হবে।' : 'Password must be at least 6 characters.';
-        }
-        setErrorMsg(msg);
-      } finally {
-        setLoading(false);
-      }
-    }
+    } catch (error: any) {
+      setErrorMsg(error.message || 'Sign-in failed. Please retry.');
+    } finally { setLoading(false); }
   };
 
   const handleGoogleLogin = async () => {
@@ -165,20 +122,20 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     setLoading(true);
 
     try {
+      await setPersistence(auth, rememberMe ? browserLocalPersistence : browserSessionPersistence);
       const cred = await signInWithPopup(auth, googleProvider);
       const fbUser = cred.user;
-      const isAdminEmail = fbUser.email?.toLowerCase() === 'mustafizurr131@gmail.com';
 
       let profile = await getFirestoreUserProfile(fbUser.uid);
-      if (!profile) {
+      if (!profile || !(profile as any).createdAt) {
         profile = {
           id: fbUser.uid,
           name: fbUser.displayName || (role === 'student' ? 'Student' : 'Teacher'),
           email: fbUser.email || '',
-          role: isAdminEmail ? 'admin' : role,
+          role,
           photoUrl: fbUser.photoURL || undefined,
-          streakDays: 1,
-          isVerifiedTeacher: isAdminEmail,
+          streakDays: 0,
+          isVerifiedTeacher: false,
           institution: institution || undefined,
           subject: subject || undefined,
           track: 'science',
@@ -189,7 +146,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       }
 
       const token = await fbUser.getIdToken();
-      localStorage.setItem('examdna_token', token);
       onAuthSuccess(profile, token);
       onClose();
     } catch (err: any) {
@@ -197,26 +153,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         setLoading(false);
         return;
       }
-      console.warn('Google sign-in exception:', err);
-      // Fallback to demo account if in strict iframe sandbox without third-party popups
-      const demoEmail = role === 'student' ? 'student@examdna.bd' : 'teacher@examdna.bd';
-      const demoPass = role === 'student' ? 'student123' : 'teacher123';
-
-      try {
-        const res = await fetch('/api/auth/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: demoEmail, password: demoPass }),
-        });
-        const data = await res.json();
-        if (res.ok) {
-          localStorage.setItem('examdna_token', data.token);
-          onAuthSuccess(data.user, data.token);
-          onClose();
-          return;
-        }
-      } catch {}
-
       setErrorMsg(err.message || 'Google Sign-in failed. Please try again.');
     } finally {
       setLoading(false);
@@ -225,14 +161,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
   const handleGuestStudentEntry = () => {
     const guestUser: UserAccount = {
-      id: 'std-guest-' + Math.random().toString(36).substring(2, 8),
-      name: lang === 'bn' ? 'তানভীর আহমেদ (গেস্ট)' : 'Tanvir Ahmed (Guest)',
-      email: 'guest.student@examdna.bd',
+      id: 'guest-student',
+      name: lang === 'bn' ? 'অতিথি' : 'Guest',
+      email: '',
       role: 'student',
       track: 'science',
       examLevel: 'SSC',
       examYear: '2027',
-      streakDays: 24,
+      streakDays: 0,
       isVerifiedTeacher: false,
     };
     onAuthSuccess(guestUser, 'guest_token_' + Date.now());
@@ -240,6 +176,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   };
 
   const isStudent = role === 'student';
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-in fade-in duration-200">
@@ -610,3 +548,4 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     </div>
   );
 };
+

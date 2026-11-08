@@ -1,3 +1,4 @@
+import { apiFetch as fetch } from '../utils/api.ts';
 import React, { useState, useEffect } from 'react';
 import { ShieldCheck, Sparkles, Heart, Award, ArrowUpRight } from 'lucide-react';
 import { motion } from 'motion/react';
@@ -156,3 +157,4 @@ export const FounderSection: React.FC<FounderSectionProps> = ({ lang, onExploreE
     </section>
   );
 };
+

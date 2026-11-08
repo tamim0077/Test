@@ -43,12 +43,14 @@ export const MistakeNotebook: React.FC<MistakeNotebookProps> = ({
   const [activeRetryEntry, setActiveRetryEntry] = useState<UserMistakeEntry | null>(null);
   const [retrySelectedOpt, setRetrySelectedOpt] = useState<number | null>(null);
   const [retryResult, setRetryResult] = useState<{ isCorrect: boolean; explanation: string } | null>(null);
+  const [retryError, setRetryError] = useState('');
   const [isSubmittingRetry, setIsSubmittingRetry] = useState(false);
 
+  const reasonsKey = `examdna_mistake_reasons_${mistakes[0]?.userId || 'guest'}`;
   // State to track student's self-diagnosed mistake reasons
   const [mistakeReasons, setMistakeReasons] = useState<Record<string, string>>(() => {
     try {
-      return JSON.parse(localStorage.getItem('examdna_mistake_reasons') || '{}');
+      return JSON.parse(localStorage.getItem(reasonsKey) || '{}');
     } catch {
       return {};
     }
@@ -61,7 +63,7 @@ export const MistakeNotebook: React.FC<MistakeNotebookProps> = ({
     setMistakeReasons((prev) => {
       const updated = { ...prev, [questionId]: reason };
       try {
-        localStorage.setItem('examdna_mistake_reasons', JSON.stringify(updated));
+        localStorage.setItem(reasonsKey, JSON.stringify(updated));
       } catch {}
       return updated;
     });
@@ -92,25 +94,21 @@ export const MistakeNotebook: React.FC<MistakeNotebookProps> = ({
   const handleStartRetry = (entry: any) => {
     setActiveRetryEntry(entry);
     setRetrySelectedOpt(null);
-    setRetryResult(null);
+    setRetryResult(null); setRetryError('');
   };
 
   const handleConfirmRetry = async () => {
     if (!activeRetryEntry || retrySelectedOpt === null) return;
-    setIsSubmittingRetry(true);
+    if (isSubmittingRetry) return;
+    setRetryError(''); setIsSubmittingRetry(true);
     try {
       const res = await onRetryQuestion(activeRetryEntry.questionId, retrySelectedOpt);
       setRetryResult({
         isCorrect: res.isCorrect,
         explanation: res.explanation,
       });
-    } catch {
-      // Fallback calculation for demo items
-      const isCor = retrySelectedOpt === activeRetryEntry.correctOptionIndex;
-      setRetryResult({
-        isCorrect: isCor,
-        explanation: activeRetryEntry.question.explanation,
-      });
+    } catch (error: any) {
+      setRetryError(error.message || 'উত্তর সংরক্ষণ হয়নি। আবার চেষ্টা করুন।');
     } finally {
       setIsSubmittingRetry(false);
     }
@@ -118,6 +116,7 @@ export const MistakeNotebook: React.FC<MistakeNotebookProps> = ({
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
+      {retryError && <p role="alert" className="p-4 bg-red-50 text-red-800">{retryError}</p>}
       <div className="max-w-4xl mx-auto space-y-6">
         
         {/* Header & Back */}
@@ -428,3 +427,4 @@ export const MistakeNotebook: React.FC<MistakeNotebookProps> = ({
     </div>
   );
 };
+

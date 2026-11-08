@@ -1,3 +1,4 @@
+import { useExamSession } from '../utils/useExamSession.ts';
 import React, { useState, useEffect, useRef } from 'react';
 import {
   Clock,
@@ -30,7 +31,8 @@ interface ExamScreenProps {
   questions: ExamQuestionView[];
   timeLimitMinutes: number;
   publishedExamId?: string;
-  onSubmitExam: (answers: Record<string, number>, timeSpentSeconds: number) => void;
+  deadline?: number;
+  onSubmitExam: (answers: Record<string, number>, timeSpentSeconds: number) => Promise<void>;
   onExit: () => void;
 }
 
@@ -40,77 +42,16 @@ export const ExamScreen: React.FC<ExamScreenProps> = ({
   questions,
   timeLimitMinutes,
   publishedExamId,
+  deadline,
   onSubmitExam,
   onExit,
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, number>>({});
   const [markedForReview, setMarkedForReview] = useState<Record<string, boolean>>({});
-  const [timeLeftSeconds, setTimeLeftSeconds] = useState(timeLimitMinutes * 60);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [isCalculatorOpen, setIsCalculatorOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const storageKey = `exam_progress_${examId}`;
   const totalQuestions = questions.length;
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(storageKey);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed.answers) setAnswers(parsed.answers);
-        if (typeof parsed.timeLeftSeconds === 'number' && parsed.timeLeftSeconds > 0) {
-          setTimeLeftSeconds(parsed.timeLeftSeconds);
-        }
-      }
-    } catch {
-      // ignore
-    }
-  }, [storageKey]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(storageKey, JSON.stringify({ answers, timeLeftSeconds }));
-    } catch {
-      // ignore
-    }
-  }, [answers, timeLeftSeconds, storageKey]);
-
-  useEffect(() => {
-    timerRef.current = setInterval(() => {
-      setTimeLeftSeconds((prev) => {
-        if (prev <= 1) {
-          clearInterval(timerRef.current!);
-          handleAutoSubmit();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, []);
-
-  const handleAutoSubmit = () => {
-    if (isSubmitting) return;
-    setIsSubmitting(true);
-    localStorage.removeItem(storageKey);
-    const timeSpent = timeLimitMinutes * 60;
-    onSubmitExam(answers, timeSpent);
-  };
-
-  const handleManualSubmit = () => {
-    if (isSubmitting) return;
-    setIsSubmitting(true);
-    localStorage.removeItem(storageKey);
-    const timeSpent = timeLimitMinutes * 60 - timeLeftSeconds;
-    onSubmitExam(answers, Math.max(1, timeSpent));
-  };
-
+  const { answers, setAnswers, timeLeftSeconds, isSubmitting, error: submitError, submit: handleManualSubmit } = useExamSession(examId, timeLimitMinutes, deadline, onSubmitExam);
   const currentQ = questions[currentIndex] || questions[0];
   const answeredCount = Object.keys(answers).length;
 
@@ -124,6 +65,7 @@ export const ExamScreen: React.FC<ExamScreenProps> = ({
   const isTimeCritical = timeLeftSeconds < 180;
 
   const selectOption = (optIndex: number) => {
+    if (timeLeftSeconds <= 0 || isSubmitting) return;
     setAnswers((prev) => ({
       ...prev,
       [currentQ.id]: optIndex,
@@ -131,6 +73,7 @@ export const ExamScreen: React.FC<ExamScreenProps> = ({
   };
 
   const clearSelection = () => {
+    if (timeLeftSeconds <= 0 || isSubmitting) return;
     setAnswers((prev) => {
       const copy = { ...prev };
       delete copy[currentQ.id];
@@ -149,12 +92,13 @@ export const ExamScreen: React.FC<ExamScreenProps> = ({
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex flex-col justify-between">
+      {submitError && <div role="alert" className="p-4 bg-red-50 text-red-800">{submitError} — উত্তরগুলো রাখা আছে। <button disabled={isSubmitting} onClick={handleManualSubmit} className="underline font-bold">আবার জমা দিন</button></div>}
       
       {/* ============================================================== */}
       {/* TOP HEADER: Breadcrumb, Timer Pill, Blue Submit Button         */}
       {/* ============================================================== */}
       <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-blue-100 px-4 sm:px-8 py-3.5 shadow-2xs">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
           
           {/* Left Breadcrumb */}
           <div className="flex items-center gap-3">
@@ -282,7 +226,7 @@ export const ExamScreen: React.FC<ExamScreenProps> = ({
           </div>
 
           {/* Question Title & Number */}
-          <div className="mb-8 pr-32">
+          <div className="mb-8 pt-12 sm:pt-0 sm:pr-32">
             <span className="text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-full border border-blue-100 inline-block mb-3">
               Question {currentIndex + 1}
             </span>
@@ -427,3 +371,4 @@ export const ExamScreen: React.FC<ExamScreenProps> = ({
     </div>
   );
 };
+

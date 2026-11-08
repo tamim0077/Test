@@ -1,3 +1,5 @@
+import { auth, signInWithEmailAndPassword, getFirestoreUserProfile } from '../config/firebase.ts';
+import { apiFetch as fetch } from '../utils/api.ts';
 import React, { useState, useEffect } from 'react';
 import {
   ShieldAlert,
@@ -73,7 +75,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [ingestSubject, setIngestSubject] = useState('সাধারণ গণিত');
   const [ingestChapter, setIngestChapter] = useState('বীজগাণিতিক রাশি');
   const [ingestTopic, setIngestTopic] = useState('বোর্ড নৈর্ব্যক্তিক');
-  const [ingestFormat, setIngestFormat] = useState<'text' | 'json'>('text');
+  const [ingestFormat, setIngestFormat] = useState<'text' | 'json'>('json');
   const [isIngesting, setIsIngesting] = useState(false);
   const [ingestFeedback, setIngestFeedback] = useState<any | null>(null);
 
@@ -131,7 +133,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         subject: ingestSubject,
         defaultChapter: ingestChapter,
         defaultTopic: ingestTopic,
-        autoApprove: true,
+        autoApprove: false,
       };
 
       if (ingestFormat === 'json') {
@@ -195,19 +197,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setIsSubmitting(true);
 
     try {
-      const res = await fetch('/api/auth/admin-login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: adminEmail, password: adminPassword }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || (lang === 'bn' ? 'অ্যাক্সেস প্রত্যাখ্যান করা হয়েছে: আপনি অনুমোদিত নন।' : 'Access denied: You are not authorized.'));
-      }
-
-      localStorage.setItem('examdna_token', data.token);
-      onAdminAuthSuccess(data.user, data.token);
+      const credential = await signInWithEmailAndPassword(auth, adminEmail.trim(), adminPassword);
+      const user = await getFirestoreUserProfile(credential.user.uid);
+      if (!user || user.role !== 'admin') throw new Error('Admin access required.');
+      onAdminAuthSuccess(user, await credential.user.getIdToken());
     } catch (err: any) {
       setAuthError(err.message || 'Access denied');
     } finally {
@@ -259,41 +252,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     e.preventDefault();
     setPaperImportStatus(lang === 'bn' ? 'আমদানি প্রক্রিয়াধীন...' : 'Importing...');
     try {
-      const sampleBoardQuestions = [
-        {
-          questionText: `${paperBoard} বোর্ড ${paperYear}: x + 1/x = 4 হলে, x² + 1/x² এর মান কত?`,
-          options: ['12', '14', '16', '18'],
-          correctAnswerIndex: 1,
-          explanation: 'x² + 1/x² = (x + 1/x)² - 2 = 16 - 2 = 14',
-          difficulty: 'medium',
-          topic: 'বর্গের সূত্রাবলী ও অনুসিদ্ধান্ত',
-        },
-        {
-          questionText: `${paperBoard} বোর্ড ${paperYear}: a + b = √7 এবং a - b = √3 হলে, 4ab এর মান কত?`,
-          options: ['2', '4', '10', '12'],
-          correctAnswerIndex: 1,
-          explanation: '4ab = (a + b)² - (a - b)² = 7 - 3 = 4',
-          difficulty: 'medium',
-          topic: 'বর্গের সূত্রাবলী ও অনুসিদ্ধান্ত',
-        },
-      ];
-
-      const res = await fetch('/api/historical/import', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          year: parseInt(paperYear, 10),
-          board: paperBoard,
-          subject: paperSubject,
-          chapter: paperChapter,
-          questions: sampleBoardQuestions,
-        }),
-      });
-
-      if (res.ok) {
-        setPaperImportStatus(lang === 'bn' ? 'সফলভাবে প্রশ্নসমূহ প্রশ্ন ব্যাংকে যোগ হয়েছে।' : 'Successfully added board questions to bank.');
-        fetchAdminData();
-      }
+      setPaperImportStatus('Use the JSON import panel with actual source questions and explicit answer keys.');
     } catch (err) {
       setPaperImportStatus(lang === 'bn' ? 'আমদানি ব্যর্থ হয়েছে।' : 'Import failed.');
     }
@@ -595,7 +554,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       <p className="text-[11px] text-slate-500 leading-relaxed">
                         {lang === 'bn'
                           ? 'শুধুমাত্র ব্যাকএন্ডে যাচাইকৃত প্রতিষ্ঠাতা ইমেইল ও টোকেন ধারী অ্যাডমিন রুটের ডেটা দেখতে সক্ষম।'
-                          : 'Only server-verified founder email and Bearer token can inspect admin datasets.'}
+                          : 'Only a server-authorized administrator can inspect admin datasets.'}
                       </p>
                     </div>
                   </div>
@@ -1047,7 +1006,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-xl border border-slate-200">
                   <button
                     type="button"
-                    onClick={() => setIngestFormat('text')}
+                    disabled title="JSON import requires an explicit answer key"
                     className={`px-3 py-1 rounded-lg text-xs font-semibold ${
                       ingestFormat === 'text' ? 'bg-white text-indigo-600 shadow-xs' : 'text-slate-600'
                     }`}
@@ -1290,3 +1249,4 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     </div>
   );
 };
+
